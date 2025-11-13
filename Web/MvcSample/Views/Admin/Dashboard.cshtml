@@ -1,0 +1,293 @@
+﻿@{
+    ViewData["Title"] = "Panel de Administración";
+    ViewBag.HideFooter = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+}
+
+<div class="admin-page">
+
+    <!-- HEADER -->
+    <header class="admin-header">
+        <div class="admin-header-left">
+            <div class="admin-logo-icon">
+                <span class="material-icon">▤</span>
+            </div>
+            <div class="admin-logo-text">
+                <div class="admin-app-name">Sistema de Salas</div>
+                <div class="admin-app-subtitle">Universidad Santiago de Cali</div>
+            </div>
+        </div>
+
+        <div class="admin-header-right">
+            <a asp-controller="Home" asp-action="Index" class="admin-logout">
+                <span class="admin-logout-icon">⟲</span>
+                <span>Cerrar Sesión</span>
+            </a>
+
+            <div class="admin-user-card">
+                <div class="admin-user-avatar">AU</div>
+                <div class="admin-user-text">
+                    <div class="admin-user-name">Admin Usuario</div>
+                    <div class="admin-user-role">Administrador</div>
+                </div>
+                <span class="admin-user-arrow">›</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="admin-tabs">
+        <button class="admin-tab active">
+            <span class="admin-tab-icon">📊</span>
+            <span>Resumen</span>
+        </button>
+        <button class="admin-tab">
+            <span class="admin-tab-icon">🏢</span>
+            <span>Salas</span>
+        </button>
+        <button class="admin-tab">
+            <span class="admin-tab-icon">💻</span>
+            <span>Equipos</span>
+        </button>
+        <button class="admin-tab">
+            <span class="admin-tab-icon">👥</span>
+            <span>Usuarios</span>
+        </button>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="admin-main">
+
+        <!-- KPIs -->
+        <section class="admin-kpi-grid">
+            <article class="admin-kpi-card kpi-blue">
+                <div class="admin-kpi-header">
+                    <span class="admin-kpi-title">Total de Salas</span>
+                    <div class="admin-kpi-icon">🏢</div>
+                </div>
+                <div class="admin-kpi-value">12</div>
+                <div class="admin-kpi-footer">
+                    <span class="admin-kpi-trend up">▲ +2</span>
+                    <span class="admin-kpi-sub">este mes</span>
+                </div>
+            </article>
+
+            <article class="admin-kpi-card kpi-teal">
+                <div class="admin-kpi-header">
+                    <span class="admin-kpi-title">Equipos Registrados</span>
+                    <div class="admin-kpi-icon">💻</div>
+                </div>
+                <div class="admin-kpi-value">245</div>
+                <div class="admin-kpi-footer">
+                    <span class="admin-kpi-trend up">▲ +15</span>
+                    <span class="admin-kpi-sub">este mes</span>
+                </div>
+            </article>
+
+            <article class="admin-kpi-card kpi-indigo">
+                <div class="admin-kpi-header">
+                    <span class="admin-kpi-title">Usuarios Activos</span>
+                    <div class="admin-kpi-icon">👥</div>
+                </div>
+                <div class="admin-kpi-value">156</div>
+                <div class="admin-kpi-footer">
+                    <span class="admin-kpi-trend up">▲ +8</span>
+                    <span class="admin-kpi-sub">esta semana</span>
+                </div>
+            </article>
+
+            <article class="admin-kpi-card kpi-orange">
+                <div class="admin-kpi-header">
+                    <span class="admin-kpi-title">Reportes Pendientes</span>
+                    <div class="admin-kpi-icon">⚠</div>
+                </div>
+                <div class="admin-kpi-value">7</div>
+                <div class="admin-kpi-footer">
+                    <span class="admin-kpi-trend down">▼ -3</span>
+                    <span class="admin-kpi-sub">desde ayer</span>
+                </div>
+            </article>
+        </section>
+
+        <!-- GRID: OCUPACIÓN + ESTADO EQUIPOS -->
+        <section class="admin-panels-grid">
+
+            <!-- OCUPACIÓN DE SALAS -->
+            <article class="admin-panel">
+                <header class="admin-panel-header panel-header-blue">
+                    <span class="admin-panel-icon">〰</span>
+                    <span class="admin-panel-title">Ocupación de Salas en Tiempo Real</span>
+                </header>
+
+                <div class="admin-panel-body">
+                    <div class="room-occupancy-item">
+                        <div class="room-occupancy-text">
+                            <div class="room-name">Lab-A1</div>
+                            <div class="room-sub">Capacidad: 30 equipos</div>
+                        </div>
+                        <div class="room-occupancy-right">
+                            <div class="room-percent high">83%</div>
+                            <div class="room-detail">25/30</div>
+                        </div>
+                        <div class="room-bar">
+                            <div class="room-bar-fill fill-orange" style="width: 83%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="room-occupancy-item">
+                        <div class="room-occupancy-text">
+                            <div class="room-name">Lab-A2</div>
+                            <div class="room-sub">Capacidad: 30 equipos</div>
+                        </div>
+                        <div class="room-occupancy-right">
+                            <div class="room-percent medium">60%</div>
+                            <div class="room-detail">18/30</div>
+                        </div>
+                        <div class="room-bar">
+                            <div class="room-bar-fill fill-yellow" style="width: 60%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="room-occupancy-item">
+                        <div class="room-occupancy-text">
+                            <div class="room-name">Lab-B1</div>
+                            <div class="room-sub">Capacidad: 25 equipos</div>
+                        </div>
+                        <div class="room-occupancy-right">
+                            <div class="room-percent high">88%</div>
+                            <div class="room-detail">22/25</div>
+                        </div>
+                        <div class="room-bar">
+                            <div class="room-bar-fill fill-pink" style="width: 88%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="room-occupancy-item">
+                        <div class="room-occupancy-text">
+                            <div class="room-name">Lab-B2</div>
+                            <div class="room-sub">Capacidad: 25 equipos</div>
+                        </div>
+                        <div class="room-occupancy-right">
+                            <div class="room-percent low">40%</div>
+                            <div class="room-detail">10/25</div>
+                        </div>
+                        <div class="room-bar">
+                            <div class="room-bar-fill fill-green" style="width: 40%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ESTADO EQUIPOS -->
+            <article class="admin-panel">
+                <header class="admin-panel-header panel-header-green">
+                    <span class="admin-panel-icon">🖥</span>
+                    <span class="admin-panel-title">Estado de Equipos</span>
+                </header>
+
+                <div class="admin-panel-body panel-body-list">
+                    <div class="status-row status-available">
+                        <div class="status-left">
+                            <span class="status-dot"></span>
+                            <span class="status-label">Disponibles</span>
+                        </div>
+                        <div class="status-right">
+                            <span class="status-count">156</span>
+                            <span class="status-percent">64%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-row status-assigned">
+                        <div class="status-left">
+                            <span class="status-dot"></span>
+                            <span class="status-label">Asignados</span>
+                        </div>
+                        <div class="status-right">
+                            <span class="status-count">72</span>
+                            <span class="status-percent">29%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-row status-blocked">
+                        <div class="status-left">
+                            <span class="status-dot"></span>
+                            <span class="status-label">Bloqueados</span>
+                        </div>
+                        <div class="status-right">
+                            <span class="status-count">12</span>
+                            <span class="status-percent">5%</span>
+                        </div>
+                    </div>
+
+                    <div class="status-row status-retired">
+                        <div class="status-left">
+                            <span class="status-dot"></span>
+                            <span class="status-label">Dados de Baja</span>
+                        </div>
+                        <div class="status-right">
+                            <span class="status-count">5</span>
+                            <span class="status-percent">2%</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- ACTIVIDAD RECIENTE -->
+        <section class="admin-activity-panel">
+            <header class="admin-panel-header panel-header-dark">
+                <span class="admin-panel-title">Actividad Reciente</span>
+            </header>
+
+            <div class="admin-panel-body activity-body">
+                <div class="activity-row">
+                    <div class="activity-left">
+                        <span class="activity-dot act-blue"></span>
+                        <div class="activity-text">
+                            <div class="activity-title">Nueva sala creada</div>
+                            <div class="activity-sub">Lab-C1 · Capacidad: 30</div>
+                        </div>
+                    </div>
+                    <div class="activity-time">Hace 2 horas</div>
+                </div>
+
+                <div class="activity-row">
+                    <div class="activity-left">
+                        <span class="activity-dot act-green"></span>
+                        <div class="activity-text">
+                            <div class="activity-title">Equipo registrado</div>
+                            <div class="activity-sub">EQ-246 · Dell OptiPlex</div>
+                        </div>
+                    </div>
+                    <div class="activity-time">Hace 4 horas</div>
+                </div>
+
+                <div class="activity-row">
+                    <div class="activity-left">
+                        <span class="activity-dot act-pink"></span>
+                        <div class="activity-text">
+                            <div class="activity-title">Usuario creado</div>
+                            <div class="activity-sub">María García · Coordinador</div>
+                        </div>
+                    </div>
+                    <div class="activity-time">Hace 1 día</div>
+                </div>
+
+                <div class="activity-row">
+                    <div class="activity-left">
+                        <span class="activity-dot act-orange"></span>
+                        <div class="activity-text">
+                            <div class="activity-title">Sala actualizada</div>
+                            <div class="activity-sub">Lab-A1 · Capacidad modificada</div>
+                        </div>
+                    </div>
+                    <div class="activity-time">Hace 2 días</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</div>

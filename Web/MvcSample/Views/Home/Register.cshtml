@@ -1,0 +1,110 @@
+﻿@{
+    ViewData["Title"] = "Crear cuenta";
+    ViewBag.HideFooter = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/register.css" asp-append-version="true" />
+}
+
+<div class="login-page">
+    <div class="login-card">
+        <!-- Header -->
+        <div class="login-card-header">
+            <div class="login-card-icon register-icon">
+                <span>👤</span>
+            </div>
+            <h1 class="login-title">Crear Cuenta</h1>
+            <p class="login-subtitle">
+                Regístrate para gestionar salas, equipos y reservas
+            </p>
+        </div>
+
+        <!-- Formulario -->
+        <form asp-action="Register" asp-controller="Home" method="post" class="login-form">
+            @* Html.AntiForgeryToken() *@
+
+            <div class="login-field">
+                <label for="Nombre">Nombre</label>
+                <div class="login-input-wrapper">
+                    <span class="login-input-icon">
+                        &#128100;
+                    </span>
+                    <input type="text"
+                           id="Nombre"
+                           name="nombre"
+                           placeholder="Ana"
+                           required />
+                </div>
+            </div>
+
+            <div class="login-field">
+                <label for="Apellido">Apellido</label>
+                <div class="login-input-wrapper">
+                    <span class="login-input-icon">
+                        &#128100;
+                    </span>
+                    <input type="text"
+                           id="Apellido"
+                           name="apellido"
+                           placeholder="Pérez"
+                           required />
+                </div>
+            </div>
+
+            <div class="login-field">
+                <label for="Email">Correo Electrónico</label>
+                <div class="login-input-wrapper">
+                    <span class="login-input-icon">
+                        &#9993;
+                    </span>
+                    <input type="email"
+                           id="Email"
+                           name="email"
+                           placeholder="tu@universidad.edu"
+                           required />
+                </div>
+            </div>
+
+            <div class="login-field">
+                <label for="Password">Contraseña</label>
+                <div class="login-input-wrapper">
+                    <span class="login-input-icon">
+                        &#128274;
+                    </span>
+                    <input type="password"
+                           id="Password"
+                           name="password"
+                           placeholder="••••••••"
+                           required />
+                </div>
+            </div>
+
+            <div class="login-field">
+                <label for="ConfirmPassword">Confirmar Contraseña</label>
+                <div class="login-input-wrapper">
+                    <span class="login-input-icon">
+                        &#128274;
+                    </span>
+                    <input type="password"
+                           id="ConfirmPassword"
+                           name="confirmPassword"
+                           placeholder="••••••••"
+                           required />
+                </div>
+            </div>
+
+            <button type="submit" class="login-button">
+                <span>Crear Cuenta</span>
+            </button>
+        </form>
+
+        <div class="recovery-back">
+            <a asp-action="Index"
+               asp-controller="Home"
+               class="recovery-back-button">
+                Volver al Login
+            </a>
+        </div>
+    </div>
+</div>

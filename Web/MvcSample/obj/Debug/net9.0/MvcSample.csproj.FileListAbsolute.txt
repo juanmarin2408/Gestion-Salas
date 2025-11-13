@@ -36,17 +36,7 @@ C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debu
 C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.Design.dll
 C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.Relational.dll
 C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.SqlServer.dll
-C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.Extensions.Caching.Abstractions.dll
-C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.Extensions.Caching.Memory.dll
-C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.Extensions.Configuration.dll
-C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.Extensions.Configuration.Abstractions.dll
-C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.Extensions.DependencyInjection.dll
-C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
 C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.Extensions.DependencyModel.dll
-C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.Extensions.Logging.dll
-C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.Extensions.Logging.Abstractions.dll
-C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.Extensions.Options.dll
-C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.Extensions.Primitives.dll
 C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.Identity.Client.dll
 C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.Identity.Client.Extensions.Msal.dll
 C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\bin\Debug\net9.0\Microsoft.IdentityModel.Abstractions.dll
@@ -234,5 +224,7 @@ C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\obj\Debu
 C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\obj\Debug\net9.0\MvcSample.pdb
 C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\obj\Debug\net9.0\MvcSample.genruntimeconfig.cache
 C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\obj\Debug\net9.0\ref\MvcSample.dll
-C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\obj\Debug\net9.0\compressed\8d88hdpqv6-{0}-vm5efal3nu-vm5efal3nu.gz
-C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\obj\Debug\net9.0\compressed\m2q15dxlxo-{0}-yttbtg1rwb-yttbtg1rwb.gz
+C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\obj\Debug\net9.0\compressed\jzpelise8p-{0}-yttbtg1rwb-yttbtg1rwb.gz
+C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\obj\Debug\net9.0\compressed\m2q15dxlxo-{0}-i4tedwvjdb-i4tedwvjdb.gz
+C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\obj\Debug\net9.0\compressed\gnjy8tsyv7-{0}-zitzsauzgr-zitzsauzgr.gz
+C:\Users\juane\OneDrive\Escritorio\Proyecto\Gestion-Salas\Web\MvcSample\obj\Debug\net9.0\compressed\8d88hdpqv6-{0}-sbtugtckcn-sbtugtckcn.gz

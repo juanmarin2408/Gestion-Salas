@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Sistema de Gestión de Salas - Login";
+    ViewBag.HideFooter = false;
 }
 
 <div class="login-page">
@@ -17,8 +18,15 @@
         </div>
 
         <!-- Formulario -->
-        <form asp-action="Login" asp-controller="Account" method="post" class="login-form">
+        <form asp-action="Login" asp-controller="Home" method="post" class="login-form">
             @* Html.AntiForgeryToken()  // descomenta cuando tengas el action real *@
+
+            @if (ViewBag.LoginError != null)
+            {
+                <div class="login-error">
+                    @ViewBag.LoginError
+                </div>
+            }
 
             <div class="login-field">
                 <label for="Email">Correo Electrónico</label>
@@ -55,12 +63,22 @@
                     ¿Olvidaste tu contraseña?
                 </a>
 
+
             </div>
 
             <button type="submit" class="login-button">
                 <span>Iniciar Sesión</span>
                 <span class="login-button-arrow">➜</span>
             </button>
+            <div class="login-register-cta">
+                <span class="login-register-text">¿Aún no tienes cuenta?</span>
+                <a asp-action="Register"
+                   asp-controller="Home"
+                   class="login-register-button">
+                    Crear cuenta
+                </a>
+            </div>
+
         </form>
 
         <!-- Acceso rápido demo -->

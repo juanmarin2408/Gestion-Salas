@@ -25,6 +25,8 @@
 
   <ItemGroup>
     <Folder Include="Views\Equipment\" />
+    <Folder Include="Views\Coordinador\" />
+    <Folder Include="Views\User\" />
   </ItemGroup>
 
 </Project>
