@@ -21,5 +21,27 @@ namespace Domain.Enums
         InUse,
         UnderMaintenance,
         Decommissioned
-    }   
+    }
+    public enum EstadoSala
+    {
+        Inactiva = 0,
+        Activa = 1
+    }
+
+    public enum RolUsuario
+    {
+        Administrador = 0,
+        Usuario = 1,
+        Invitado = 2
+    }
+
+    public enum EstadoEquipo
+    {
+        Disponible = 0,
+        Asignado = 1,
+        EnMantenimiento = 2,
+        Dañado = 3,
+        Baja = 4
+    }
+
 }
