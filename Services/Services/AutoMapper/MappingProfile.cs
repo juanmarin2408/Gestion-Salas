@@ -3,6 +3,7 @@ using Domain;
 using Services.Models.CowModels;
 using Services.Models.FarmModels;
 using Services.Models.MilkModels;
+using Services.Models.UserModels;
 
 namespace Services.Automapper
 {
@@ -13,6 +14,7 @@ namespace Services.Automapper
             FarmMapper();
             MilkMapper();
             CowMapper();
+            UserMapper();
         }
 
         private void MilkMapper()
@@ -42,7 +44,14 @@ namespace Services.Automapper
 
             CreateMap<Farm, AddFarmModel>()
                 .ReverseMap();
-        }   
+        }
+        
+        private void UserMapper()
+        {
+            // Usuario
+            CreateMap<AddUserModel, Usuario>();
+            CreateMap<Usuario, UserModel>();
+        }
 
     }
 

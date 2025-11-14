@@ -1,7 +1,9 @@
 
 using AutoMapper;
+using Domain;
 using Infrastructure;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Services;
 using Services.Automapper;
@@ -16,6 +18,7 @@ namespace MvcSample
             var _configuration = builder.Configuration;
             // Add services to the container.
             builder.Services.AddServices();
+            builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
             builder.Services.AddRepositories(_configuration);
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
             // Add automapper

@@ -17,7 +17,7 @@ namespace Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.10")
+                .HasAnnotation("ProductVersion", "9.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -40,6 +40,25 @@ namespace Infrastructure.Migrations
                     b.HasIndex("FarmId");
 
                     b.ToTable("Cows");
+                });
+
+            modelBuilder.Entity("Domain.Equipo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("SalaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SalaId");
+
+                    b.ToTable("Equipos");
                 });
 
             modelBuilder.Entity("Domain.Farm", b =>
@@ -86,6 +105,83 @@ namespace Infrastructure.Migrations
                     b.ToTable("Milks");
                 });
 
+            modelBuilder.Entity("Domain.Sala", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Capacidad")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Numero")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Ubicacion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("Salas");
+                });
+
+            modelBuilder.Entity("Domain.Usuario", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Apellido")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Rol")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UltimoAcceso")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Usuarios");
+                });
+
             modelBuilder.Entity("Domain.Cow", b =>
                 {
                     b.HasOne("Domain.Farm", "Farm")
@@ -95,6 +191,17 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Farm");
+                });
+
+            modelBuilder.Entity("Domain.Equipo", b =>
+                {
+                    b.HasOne("Domain.Sala", "Sala")
+                        .WithMany("Equipos")
+                        .HasForeignKey("SalaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sala");
                 });
 
             modelBuilder.Entity("Domain.Milk", b =>
@@ -108,6 +215,15 @@ namespace Infrastructure.Migrations
                     b.Navigation("Cow");
                 });
 
+            modelBuilder.Entity("Domain.Sala", b =>
+                {
+                    b.HasOne("Domain.Usuario", "Usuario")
+                        .WithMany("Salas")
+                        .HasForeignKey("UsuarioId");
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("Domain.Cow", b =>
                 {
                     b.Navigation("Milks");
@@ -116,6 +232,16 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Farm", b =>
                 {
                     b.Navigation("Cows");
+                });
+
+            modelBuilder.Entity("Domain.Sala", b =>
+                {
+                    b.Navigation("Equipos");
+                });
+
+            modelBuilder.Entity("Domain.Usuario", b =>
+                {
+                    b.Navigation("Salas");
                 });
 #pragma warning restore 612, 618
         }

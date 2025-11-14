@@ -1,6 +1,7 @@
 ﻿
 
 using Services.Models.MilkModels;
+using Services.Models.UserModels;
 
 namespace Services.Models.CowModels
 {
