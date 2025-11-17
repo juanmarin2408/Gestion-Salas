@@ -14,8 +14,8 @@ namespace Domain
         [MaxLength(100)]
         public string Apellido { get; set; }
 
-        [Required, MaxLength(100)]
-        public string UserName { get; set; }
+        [Required, MaxLength(50)]
+        public string Documento { get; set; }
 
         [Required, EmailAddress, MaxLength(256)]
         public string Email { get; set; }

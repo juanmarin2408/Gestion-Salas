@@ -33,6 +33,12 @@ namespace Infrastructure.Repositories
                 .FirstOrDefaultAsync(x => x.Email == email);
         }
 
+        public async Task<Usuario?> GetByDocumento(string documento)
+        {
+            return await context.Usuarios
+                .FirstOrDefaultAsync(x => x.Documento == documento);
+        }
+
         public async Task Save(Usuario usuario)
         {
             await context.Usuarios.AddAsync(usuario);
@@ -43,13 +49,13 @@ namespace Infrastructure.Repositories
         {
             try
             {
-                await Beguin();
+                await Begin();
 
                 context.Usuarios.Update(usuario);
 
                 await Save();
 
-                await Comit();
+                await Commit();
             }
             catch (Exception)
             {

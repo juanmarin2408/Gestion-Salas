@@ -11,7 +11,7 @@ namespace Services.Models.UserModels
 
         public string Apellido { get; set; } = string.Empty;
 
-        public string UserName { get; set; } = string.Empty;
+        public string Documento { get; set; } = string.Empty;
 
         public string Email { get; set; } = string.Empty;
 

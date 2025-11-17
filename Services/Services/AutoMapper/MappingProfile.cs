@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Domain;
+using Services.Models.EquipoModels;
+using Services.Models.SalaModels;
 using Services.Models.UserModels;
 
 namespace Services.Automapper
@@ -9,6 +11,8 @@ namespace Services.Automapper
         public MappingProfile()
         {
             UserMapper();
+            SalaMapper();
+            EquipoMapper();
         }
         
         private void UserMapper()
@@ -18,7 +22,18 @@ namespace Services.Automapper
             CreateMap<Usuario, UserModel>();
         }
 
-    }
+        private void SalaMapper()
+        {
+            // Sala
+            CreateMap<AddSalaModel, Sala>();
+            CreateMap<Sala, SalaModel>();
+        }
 
-    
+        private void EquipoMapper()
+        {
+            // Equipo
+            CreateMap<AddEquipoModel, Equipo>();
+            CreateMap<Equipo, EquipoModel>();
+        }
+    }
 }

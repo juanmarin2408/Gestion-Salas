@@ -4,8 +4,6 @@ using MvcSample.Models;
 using Services;
 using Services.Models.UserModels;
 using System.Diagnostics;
-using Services;
-using Services.Models.UserModels;
 
 
 namespace MvcSample.Controllers
@@ -44,31 +42,54 @@ namespace MvcSample.Controllers
         /* ------- LOGIN ------- */
 
         [HttpPost]
-        public IActionResult Login(string Email, string Password)
+        public async Task<IActionResult> Login(string Email, string Password)
         {
-            // DEMO: credenciales "hardcodeadas"
-            if (Email == "admin@universidad.edu" && Password == "Admin123!")
-            {
-                // Admin -> dashboard admin
-                return RedirectToAction("Dashboard", "Admin");
-            }
-
-            if (Email == "coordinador@universidad.edu" && Password == "Coord123!")
-            {
-                // Coordinador -> (cuando tengas su controlador/vista)
-                return RedirectToAction("Index", "Coordinator");
-            }
-
-            if (Email == "usuario@universidad.edu" && Password == "User123!")
-            {
-                // Usuario normal -> otra página
-                return RedirectToAction("Index", "User");
-            }
-
-            // Si no coincide nada, volvemos al login con error
             ViewBag.HideFooter = true;
-            ViewBag.LoginError = "Credenciales inválidas. Verifica tu correo y contraseña.";
-            return View("Index");
+
+            if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
+            {
+                ViewBag.LoginError = "Por favor ingresa tu correo y contraseña.";
+                return View("Index");
+            }
+
+            try
+            {
+                var usuario = await _userService.LoginAsync(Email, Password);
+                
+                if (usuario == null)
+                {
+                    ViewBag.LoginError = "Credenciales inválidas. Verifica tu correo y contraseña.";
+                    return View("Index");
+                }
+
+                // Guardar información del usuario en sesión
+                HttpContext.Session.SetString("UserId", usuario.Id.ToString());
+                HttpContext.Session.SetString("Documento", usuario.Documento);
+                HttpContext.Session.SetString("Email", usuario.Email);
+                HttpContext.Session.SetString("Nombre", usuario.Nombre);
+                HttpContext.Session.SetString("Rol", usuario.Rol.ToString());
+
+                // Redirigir según el rol
+                return usuario.Rol switch
+                {
+                    Domain.Enums.RolUsuario.Administrador => RedirectToAction("Dashboard", "Admin"),
+                    Domain.Enums.RolUsuario.Usuario => RedirectToAction("Index", "User"),
+                    _ => RedirectToAction("Index", "Home")
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error durante el login");
+                ViewBag.LoginError = "Ocurrió un error al iniciar sesión. Por favor intenta de nuevo.";
+                return View("Index");
+            }
+        }
+
+        [HttpPost]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Index", "Home");
         }
 
         /* ------- RECUPERAR CONTRASEÑA ------- */
@@ -78,6 +99,60 @@ namespace MvcSample.Controllers
         {
             ViewBag.HideFooter = true;
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> VerifyEmail(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return Json(new { exists = false, message = "Por favor ingresa un correo." });
+            }
+
+            try
+            {
+                var exists = await _userService.EmailExistsAsync(email);
+                return Json(new { exists = exists, message = exists ? "Correo encontrado." : "El correo no está registrado." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al verificar email");
+                return Json(new { exists = false, message = "Ocurrió un error al verificar el correo." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(string email, string newPassword, string confirmPassword)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirmPassword))
+            {
+                return Json(new { success = false, message = "Todos los campos son requeridos." });
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                return Json(new { success = false, message = "Las contraseñas no coinciden." });
+            }
+
+            if (newPassword.Length < 6)
+            {
+                return Json(new { success = false, message = "La contraseña debe tener al menos 6 caracteres." });
+            }
+
+            try
+            {
+                await _userService.ChangePasswordAsync(email, newPassword);
+                return Json(new { success = true, message = "Contraseña actualizada correctamente." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al cambiar contraseña");
+                return Json(new { success = false, message = "Ocurrió un error al cambiar la contraseña." });
+            }
         }
 
 

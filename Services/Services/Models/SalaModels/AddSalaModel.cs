@@ -1,14 +1,10 @@
-﻿using Domain.Enums;
+using Domain.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Domain
+namespace Services.Models.SalaModels
 {
-    public class Sala
+    public class AddSalaModel
     {
-        [Key]
-        public Guid Id { get; set; }
-
         [Required, MaxLength(50)]
         public string Numero { get; set; } = string.Empty;
 
@@ -20,12 +16,7 @@ namespace Domain
 
         public EstadoSala Estado { get; set; } = EstadoSala.Activa;
 
-        // Relación: una Sala tiene muchos Equipos
-        public List<Equipo> Equipos { get; set; } = new();
-
-        // Relación: una Sala puede tener un Usuario asignado (por ejemplo, responsable)
         public Guid? UsuarioId { get; set; }
-        public Usuario? Usuario { get; set; }
-
     }
 }
+

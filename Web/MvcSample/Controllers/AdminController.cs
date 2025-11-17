@@ -8,7 +8,7 @@ namespace MvcSample.Controllers
     {
         public IActionResult Dashboard()
         {
-            // Más adelante aquí puedes pasar un ViewModel con los datos reales
+            // MÃ¡s adelante aquÃ­ puedes pasar un ViewModel con los datos reales
             return View();
         }
 

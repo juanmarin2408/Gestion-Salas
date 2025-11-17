@@ -21,11 +21,11 @@ namespace Infrastructure
             await context.SaveChangesAsync();
         }
 
-        public async Task Beguin()
+        public async Task Begin()
         {
             await context.Database.BeginTransactionAsync();
         }
-        public async Task Comit()
+        public async Task Commit()
         {
             await context.Database.CommitTransactionAsync();
         }

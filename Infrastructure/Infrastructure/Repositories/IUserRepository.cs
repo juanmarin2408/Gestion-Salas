@@ -12,6 +12,7 @@ namespace Infrastructure.Repositories
         Task<IList<Usuario>> GetUsers();
         Task<Usuario?> GetUser(Guid id);
         Task<Usuario?> GetByEmail(string email);
+        Task<Usuario?> GetByDocumento(string documento);
 
         Task Save(Usuario usuario);
         Task Update(Usuario usuario);

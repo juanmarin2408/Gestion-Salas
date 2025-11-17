@@ -11,8 +11,8 @@ namespace Services.Models.UserModels
         [MaxLength(100)]
         public string Apellido { get; set; } = string.Empty;
 
-        [Required, MaxLength(100)]
-        public string UserName { get; set; } = string.Empty;
+        [Required, MaxLength(50)]
+        public string Documento { get; set; } = string.Empty;
 
         [Required, EmailAddress, MaxLength(256)]
         public string Email { get; set; } = string.Empty;

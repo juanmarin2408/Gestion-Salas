@@ -40,13 +40,41 @@ namespace Services
             return _mapper.Map<UserModel>(usuario);
         }
 
+        public async Task<Usuario?> LoginAsync(string email, string password)
+        {
+            var usuario = await _userRepository.GetByEmail(email);
+            if (usuario == null || !usuario.Activo)
+            {
+                return null;
+            }
+
+            var result = _passwordHasher.VerifyHashedPassword(usuario, usuario.PasswordHash, password);
+            if (result == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
+            {
+                return null;
+            }
+
+            // Actualizar último acceso
+            usuario.UltimoAcceso = DateTime.UtcNow;
+            await _userRepository.Update(usuario);
+
+            return usuario;
+        }
+
         public async Task Register(AddUserModel model)
         {
             // ¿Existe el email?
-            var existing = await _userRepository.GetByEmail(model.Email);
-            if (existing != null)
+            var existingEmail = await _userRepository.GetByEmail(model.Email);
+            if (existingEmail != null)
             {
                 throw new InvalidOperationException("El correo ya está registrado.");
+            }
+
+            // ¿Existe el documento?
+            var existingDoc = await _userRepository.GetByDocumento(model.Documento);
+            if (existingDoc != null)
+            {
+                throw new InvalidOperationException("El documento ya está registrado.");
             }
 
             // Mapear del modelo de vista a la entidad
@@ -59,6 +87,41 @@ namespace Services
             usuario.PasswordHash = _passwordHasher.HashPassword(usuario, model.Password);
 
             await _userRepository.Save(usuario);
+        }
+
+        public async Task UpdateLastAccess(Guid userId)
+        {
+            var usuario = await _userRepository.GetUser(userId);
+            if (usuario != null)
+            {
+                usuario.UltimoAcceso = DateTime.UtcNow;
+                await _userRepository.Update(usuario);
+            }
+        }
+
+        public async Task<bool> EmailExistsAsync(string email)
+        {
+            var usuario = await _userRepository.GetByEmail(email);
+            return usuario != null;
+        }
+
+        public async Task ChangePasswordAsync(string email, string newPassword)
+        {
+            var usuario = await _userRepository.GetByEmail(email);
+            if (usuario == null)
+            {
+                throw new InvalidOperationException("El correo no está registrado.");
+            }
+
+            if (!usuario.Activo)
+            {
+                throw new InvalidOperationException("El usuario está inactivo.");
+            }
+
+            // Hashear la nueva contraseña
+            usuario.PasswordHash = _passwordHasher.HashPassword(usuario, newPassword);
+            
+            await _userRepository.Update(usuario);
         }
     }
 }
