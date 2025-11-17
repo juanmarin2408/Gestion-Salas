@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Services;
 using Domain.Enums;
 using Services.Models.SolicitudModels;
+using Services.Models.EquipoModels;
 using MvcSample.Filters;
 
 namespace MvcSample.Controllers
@@ -11,11 +12,22 @@ namespace MvcSample.Controllers
     {
         private readonly ISalaService _salaService;
         private readonly IEquipoService _equipoService;
+        private readonly ISolicitudPrestamoService _solicitudService;
+        private readonly IReporteDanoService _reporteService;
+        private readonly IUserService _userService;
 
-        public CoordinadorController(ISalaService salaService, IEquipoService equipoService)
+        public CoordinadorController(
+            ISalaService salaService, 
+            IEquipoService equipoService,
+            ISolicitudPrestamoService solicitudService,
+            IReporteDanoService reporteService,
+            IUserService userService)
         {
             _salaService = salaService;
             _equipoService = equipoService;
+            _solicitudService = solicitudService;
+            _reporteService = reporteService;
+            _userService = userService;
         }
 
         // GET: Coordinador/Dashboard
@@ -24,11 +36,11 @@ namespace MvcSample.Controllers
             var salas = await _salaService.GetSalas();
             var equipos = await _equipoService.GetEquipos();
 
-            // Calcular estadísticas para el coordinador
-            ViewBag.SolicitudesPendientes = 8; // TODO: Implementar cuando tengas el modelo de solicitudes
-            ViewBag.SolicitudesUrgentes = 3; // TODO: Implementar cuando tengas el modelo de solicitudes
+            // Calcular estadísticas para el coordinador desde la BD
+            ViewBag.SolicitudesPendientes = await _solicitudService.GetSolicitudesPendientesCount();
+            ViewBag.SolicitudesUrgentes = await _solicitudService.GetSolicitudesUrgentesCount();
             ViewBag.EquiposBloqueados = equipos.Count(e => e.Estado == EstadoEquipo.EnMantenimiento || e.Estado == EstadoEquipo.Dañado);
-            ViewBag.ReportesDanos = 5; // TODO: Implementar cuando tengas el modelo de reportes
+            ViewBag.ReportesDanos = await _reporteService.GetReportesPendientesCount();
             ViewBag.EquiposDisponibles = equipos.Count(e => e.Estado == EstadoEquipo.Disponible);
             ViewBag.Salas = salas;
             ViewBag.Equipos = equipos;
@@ -39,12 +51,11 @@ namespace MvcSample.Controllers
         // GET: Coordinador/Solicitudes
         public async Task<IActionResult> Solicitudes()
         {
-            // TODO: Implementar cuando tengas el servicio de solicitudes
-            ViewBag.SolicitudesPendientes = 8;
-            ViewBag.ReportesDanos = 5;
+            var solicitudes = await _solicitudService.GetSolicitudes();
+            ViewBag.SolicitudesPendientes = await _solicitudService.GetSolicitudesPendientesCount();
+            ViewBag.ReportesDanos = await _reporteService.GetReportesPendientesCount();
             
-            // Por ahora retornamos una lista vacía hasta que tengas el servicio
-            return View(new List<Services.Models.SolicitudModels.SolicitudModel>());
+            return View(solicitudes);
         }
 
         // POST: Coordinador/AprobarSolicitud
@@ -63,6 +74,91 @@ namespace MvcSample.Controllers
         {
             // TODO: Implementar cuando tengas el servicio de solicitudes
             return Json(new { success = false, message = "Funcionalidad en desarrollo" });
+        }
+
+        // GET: Coordinador/Equipos
+        public async Task<IActionResult> Equipos()
+        {
+            var equipos = await _equipoService.GetEquipos();
+            // Obtener solo usuarios que tienen solicitudes (pendientes o aprobadas)
+            var usuarios = await _solicitudService.GetUsuariosConSolicitudes();
+            
+            ViewBag.SolicitudesPendientes = await _solicitudService.GetSolicitudesPendientesCount();
+            ViewBag.ReportesDanos = await _reporteService.GetReportesPendientesCount();
+            ViewBag.Usuarios = usuarios;
+            
+            return View(equipos);
+        }
+
+        // POST: Coordinador/AsignarEquipo
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AsignarEquipo(Guid id, Guid UsuarioId)
+        {
+            try
+            {
+                await _equipoService.AsignarEquipo(id, UsuarioId);
+                return Json(new { success = true, message = "Equipo asignado exitosamente." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "Ocurrió un error al asignar el equipo." });
+            }
+        }
+
+        // POST: Coordinador/BloquearEquipo
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BloquearEquipo(Guid id, string MotivoBloqueo, PrioridadReporte PrioridadBloqueo)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return Json(new { success = false, message = "El ID del equipo es requerido." });
+                }
+
+                if (string.IsNullOrWhiteSpace(MotivoBloqueo))
+                {
+                    return Json(new { success = false, message = "El motivo del bloqueo es requerido." });
+                }
+
+                await _equipoService.BloquearEquipo(id, MotivoBloqueo, PrioridadBloqueo);
+                return Json(new { success = true, message = "Equipo bloqueado exitosamente." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception for debugging
+                return Json(new { success = false, message = $"Ocurrió un error al bloquear el equipo: {ex.Message}" });
+            }
+        }
+
+        // POST: Coordinador/LiberarEquipo
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LiberarEquipo(Guid id)
+        {
+            try
+            {
+                await _equipoService.LiberarEquipo(id);
+                return Json(new { success = true, message = "Equipo liberado exitosamente." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "Ocurrió un error al liberar el equipo." });
+            }
         }
     }
 }

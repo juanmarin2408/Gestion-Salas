@@ -17,6 +17,7 @@ namespace Infrastructure.Repositories
         {
             return await context.Equipos
                 .Include(e => e.Sala)
+                .Include(e => e.AsignadoA)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -25,6 +26,7 @@ namespace Infrastructure.Repositories
         {
             return await context.Equipos
                 .Include(e => e.Sala)
+                .Include(e => e.AsignadoA)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
@@ -33,6 +35,7 @@ namespace Infrastructure.Repositories
             return await context.Equipos
                 .Where(e => e.SalaId == salaId)
                 .Include(e => e.Sala)
+                .Include(e => e.AsignadoA)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -42,6 +45,7 @@ namespace Infrastructure.Repositories
             return await context.Equipos
                 .Where(e => e.Estado == estado)
                 .Include(e => e.Sala)
+                .Include(e => e.AsignadoA)
                 .AsNoTracking()
                 .ToListAsync();
         }

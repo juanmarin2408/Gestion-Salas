@@ -34,7 +34,13 @@ namespace Services
                 Id = e.Id,
                 SalaId = e.SalaId,
                 SalaNumero = e.Sala?.Numero ?? string.Empty,
-                Estado = e.Estado
+                Estado = e.Estado,
+                AsignadoAId = e.AsignadoAId,
+                AsignadoANombre = e.AsignadoA != null ? $"{e.AsignadoA.Nombre} {e.AsignadoA.Apellido}".Trim() : null,
+                AsignadoAEmail = e.AsignadoA?.Email,
+                MotivoBloqueo = e.MotivoBloqueo,
+                PrioridadBloqueo = e.PrioridadBloqueo,
+                FechaBloqueo = e.FechaBloqueo
             }).ToList();
         }
 
@@ -48,7 +54,13 @@ namespace Services
                 Id = equipo.Id,
                 SalaId = equipo.SalaId,
                 SalaNumero = equipo.Sala?.Numero ?? string.Empty,
-                Estado = equipo.Estado
+                Estado = equipo.Estado,
+                AsignadoAId = equipo.AsignadoAId,
+                AsignadoANombre = equipo.AsignadoA != null ? $"{equipo.AsignadoA.Nombre} {equipo.AsignadoA.Apellido}".Trim() : null,
+                AsignadoAEmail = equipo.AsignadoA?.Email,
+                MotivoBloqueo = equipo.MotivoBloqueo,
+                PrioridadBloqueo = equipo.PrioridadBloqueo,
+                FechaBloqueo = equipo.FechaBloqueo
             };
         }
 
@@ -60,7 +72,13 @@ namespace Services
                 Id = e.Id,
                 SalaId = e.SalaId,
                 SalaNumero = e.Sala?.Numero ?? string.Empty,
-                Estado = e.Estado
+                Estado = e.Estado,
+                AsignadoAId = e.AsignadoAId,
+                AsignadoANombre = e.AsignadoA != null ? $"{e.AsignadoA.Nombre} {e.AsignadoA.Apellido}".Trim() : null,
+                AsignadoAEmail = e.AsignadoA?.Email,
+                MotivoBloqueo = e.MotivoBloqueo,
+                PrioridadBloqueo = e.PrioridadBloqueo,
+                FechaBloqueo = e.FechaBloqueo
             }).ToList();
         }
 
@@ -72,7 +90,13 @@ namespace Services
                 Id = e.Id,
                 SalaId = e.SalaId,
                 SalaNumero = e.Sala?.Numero ?? string.Empty,
-                Estado = e.Estado
+                Estado = e.Estado,
+                AsignadoAId = e.AsignadoAId,
+                AsignadoANombre = e.AsignadoA != null ? $"{e.AsignadoA.Nombre} {e.AsignadoA.Apellido}".Trim() : null,
+                AsignadoAEmail = e.AsignadoA?.Email,
+                MotivoBloqueo = e.MotivoBloqueo,
+                PrioridadBloqueo = e.PrioridadBloqueo,
+                FechaBloqueo = e.FechaBloqueo
             }).ToList();
         }
 
@@ -124,6 +148,68 @@ namespace Services
             }
 
             await _equipoRepository.Delete(id);
+        }
+
+        public async Task AsignarEquipo(Guid equipoId, Guid usuarioId)
+        {
+            var equipo = await _equipoRepository.GetEquipo(equipoId);
+            if (equipo == null)
+            {
+                throw new InvalidOperationException("Equipo no encontrado.");
+            }
+
+            if (equipo.Estado != EstadoEquipo.Disponible)
+            {
+                throw new InvalidOperationException("El equipo no está disponible para asignación.");
+            }
+
+            equipo.Estado = EstadoEquipo.Asignado;
+            equipo.AsignadoAId = usuarioId;
+            equipo.MotivoBloqueo = null;
+            equipo.PrioridadBloqueo = null;
+            equipo.FechaBloqueo = null;
+
+            await _equipoRepository.Update(equipo);
+        }
+
+        public async Task BloquearEquipo(Guid equipoId, string motivoBloqueo, PrioridadReporte prioridadBloqueo)
+        {
+            var equipo = await _equipoRepository.GetEquipo(equipoId);
+            if (equipo == null)
+            {
+                throw new InvalidOperationException("Equipo no encontrado.");
+            }
+
+            // Determinar el estado según la prioridad
+            EstadoEquipo nuevoEstado = prioridadBloqueo == PrioridadReporte.Alta || prioridadBloqueo == PrioridadReporte.Urgente
+                ? EstadoEquipo.Dañado
+                : EstadoEquipo.EnMantenimiento;
+
+            equipo.Estado = nuevoEstado;
+            equipo.MotivoBloqueo = motivoBloqueo;
+            equipo.PrioridadBloqueo = prioridadBloqueo;
+            equipo.FechaBloqueo = DateTime.UtcNow;
+            // Limpiar asignación si estaba asignado
+            equipo.AsignadoAId = null;
+
+            await _equipoRepository.Update(equipo);
+        }
+
+        public async Task LiberarEquipo(Guid equipoId)
+        {
+            var equipo = await _equipoRepository.GetEquipo(equipoId);
+            if (equipo == null)
+            {
+                throw new InvalidOperationException("Equipo no encontrado.");
+            }
+
+            equipo.Estado = EstadoEquipo.Disponible;
+            equipo.AsignadoAId = null;
+            equipo.MotivoBloqueo = null;
+            equipo.PrioridadBloqueo = null;
+            equipo.FechaBloqueo = null;
+
+            await _equipoRepository.Update(equipo);
         }
     }
 }

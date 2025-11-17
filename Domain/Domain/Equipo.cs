@@ -17,5 +17,21 @@ namespace Domain
 
         public EstadoEquipo Estado { get; set; } = EstadoEquipo.Disponible;
 
+        // Usuario al que está asignado el equipo
+        public Guid? AsignadoAId { get; set; }
+
+        [ForeignKey("AsignadoAId")]
+        public Usuario? AsignadoA { get; set; }
+
+        // Motivo del bloqueo (cuando está en mantenimiento o dañado)
+        [MaxLength(500)]
+        public string? MotivoBloqueo { get; set; }
+
+        // Prioridad del bloqueo
+        public PrioridadReporte? PrioridadBloqueo { get; set; }
+
+        // Fecha en que se bloqueó
+        public DateTime? FechaBloqueo { get; set; }
+
     }
 }

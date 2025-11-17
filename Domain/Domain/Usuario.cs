@@ -51,5 +51,9 @@ namespace Domain
         [InverseProperty("ResueltoPor")]
         public List<ReporteDano> ReportesResueltos { get; set; } = new();
 
+        // Relación: un Usuario puede tener equipos asignados
+        [InverseProperty("AsignadoA")]
+        public List<Equipo> EquiposAsignados { get; set; } = new();
+
     }
 }

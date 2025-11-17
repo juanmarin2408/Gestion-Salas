@@ -1,0 +1,706 @@
+@model IList<Services.Models.EquipoModels.EquipoModel>
+@{
+    ViewData["Title"] = "Control de Equipos";
+    ViewBag.HideFooter = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/salas.css" asp-append-version="true" />
+    <style>
+        .tab-badge {
+            background-color: #ef4444;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+
+        .status-disponible {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-asignado {
+            background-color: #dbeafe;
+            color: #2563eb;
+        }
+
+        .status-bloqueado {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        .priority-baja {
+            background-color: #e5e7eb;
+            color: #6b7280;
+        }
+
+        .priority-media {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-alta {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .priority-urgente {
+            background-color: #dc2626;
+            color: #ffffff;
+        }
+
+        .btn-asignar {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-asignar:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-bloquear {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-bloquear:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-liberar {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-liberar:hover {
+            transform: translateY(-1px);
+        }
+
+        .equipo-asignado {
+            font-size: 13px;
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .equipo-motivo {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .equipo-codigo {
+            font-weight: 600;
+            color: #0f172a;
+        }
+    </style>
+}
+
+<div class="admin-page">
+    <!-- HEADER -->
+    <header class="admin-header">
+        <div class="admin-header-left">
+            <div class="admin-logo-icon">
+                <span class="material-icon">▤</span>
+            </div>
+            <div class="admin-logo-text">
+                <div class="admin-app-name">Sistema de Salas</div>
+                <div class="admin-app-subtitle">Universidad Santiago de Cali</div>
+            </div>
+        </div>
+
+        <div class="admin-header-right">
+            <form asp-controller="Home" asp-action="Logout" method="post" style="display: inline;">
+                <button type="submit" class="admin-logout" style="border: none; background: none; cursor: pointer; padding: 0;">
+                    <span class="admin-logout-icon">⟲</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+
+            <div class="admin-user-card">
+                <div class="admin-user-avatar">@(Context.Session.GetString("Nombre")?.Substring(0, 1).ToUpper() ?? "C")@(Context.Session.GetString("Apellido")?.Substring(0, 1).ToUpper() ?? "P")</div>
+                <div class="admin-user-text">
+                    <div class="admin-user-name">@(Context.Session.GetString("Nombre") ?? "Coordinador") @(Context.Session.GetString("Apellido") ?? "")</div>
+                    <div class="admin-user-role">Coordinador</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="admin-tabs">
+        <a asp-controller="Coordinador" asp-action="Index" class="admin-tab">
+            <span class="admin-tab-icon">📊</span>
+            <span>Resumen</span>
+        </a>
+        <a asp-controller="Coordinador" asp-action="Solicitudes" class="admin-tab">
+            <span class="admin-tab-icon">📋</span>
+            <span>Solicitudes</span>
+            @if ((ViewBag.SolicitudesPendientes ?? 0) > 0)
+            {
+                <span class="tab-badge">@(ViewBag.SolicitudesPendientes)</span>
+            }
+        </a>
+        <a asp-controller="Coordinador" asp-action="Equipos" class="admin-tab active">
+            <span class="admin-tab-icon">💻</span>
+            <span>Equipos</span>
+        </a>
+        <button class="admin-tab">
+            <span class="admin-tab-icon">📄</span>
+            <span>Reportes</span>
+            @if ((ViewBag.ReportesDanos ?? 0) > 0)
+            {
+                <span class="tab-badge">@(ViewBag.ReportesDanos)</span>
+            }
+        </button>
+        <button class="admin-tab">
+            <span class="admin-tab-icon">📅</span>
+            <span>Calendario</span>
+        </button>
+        <button class="admin-tab">
+            <span class="admin-tab-icon">📈</span>
+            <span>Estadísticas</span>
+        </button>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="admin-main">
+        <div class="salas-header">
+            <h1 class="salas-title">Control de Equipos</h1>
+            <div class="salas-actions">
+                <div class="salas-search-filter">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Buscar por código o sala..." />
+                    </div>
+                    <select id="filterEstado" class="filter-select">
+                        <option value="">Todos los estados</option>
+                        <option value="0">Disponibles</option>
+                        <option value="1">Asignados</option>
+                        <option value="2">Bloqueados</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensajes -->
+        <div id="messageContainer" style="display: none;"></div>
+
+        <!-- Tabla de Equipos -->
+        <div class="salas-table-container">
+            <table class="salas-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Sala</th>
+                        <th>Estado</th>
+                        <th>Asignado A / Motivo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="equiposTableBody">
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var equipo in Model)
+                        {
+                            var estadoClass = equipo.Estado switch
+                            {
+                                Domain.Enums.EstadoEquipo.Disponible => "status-disponible",
+                                Domain.Enums.EstadoEquipo.Asignado => "status-asignado",
+                                Domain.Enums.EstadoEquipo.EnMantenimiento => "status-bloqueado",
+                                Domain.Enums.EstadoEquipo.Dañado => "status-bloqueado",
+                                _ => ""
+                            };
+                            var estadoTexto = equipo.Estado switch
+                            {
+                                Domain.Enums.EstadoEquipo.Disponible => "Disponible",
+                                Domain.Enums.EstadoEquipo.Asignado => "Asignado",
+                                Domain.Enums.EstadoEquipo.EnMantenimiento => "Bloqueado",
+                                Domain.Enums.EstadoEquipo.Dañado => "Bloqueado",
+                                Domain.Enums.EstadoEquipo.Baja => "Baja",
+                                _ => "Desconocido"
+                            };
+                            var prioridadClass = equipo.PrioridadBloqueo switch
+                            {
+                                Domain.Enums.PrioridadReporte.Baja => "priority-baja",
+                                Domain.Enums.PrioridadReporte.Media => "priority-media",
+                                Domain.Enums.PrioridadReporte.Alta => "priority-alta",
+                                Domain.Enums.PrioridadReporte.Urgente => "priority-urgente",
+                                _ => ""
+                            };
+                            var prioridadTexto = equipo.PrioridadBloqueo switch
+                            {
+                                Domain.Enums.PrioridadReporte.Baja => "Baja",
+                                Domain.Enums.PrioridadReporte.Media => "Media",
+                                Domain.Enums.PrioridadReporte.Alta => "Alta",
+                                Domain.Enums.PrioridadReporte.Urgente => "Urgente",
+                                _ => ""
+                            };
+                            var estaBloqueado = equipo.Estado == Domain.Enums.EstadoEquipo.EnMantenimiento || equipo.Estado == Domain.Enums.EstadoEquipo.Dañado;
+                            var estaAsignado = equipo.Estado == Domain.Enums.EstadoEquipo.Asignado;
+
+                            <tr data-equipo-id="@equipo.Id" data-estado="@((int)equipo.Estado)">
+                                <td class="equipo-codigo">@equipo.Id.ToString().Substring(0, 8).ToUpper()</td>
+                                <td>
+                                    <span class="location-icon">📍</span>
+                                    @equipo.SalaNumero
+                                </td>
+                                <td>
+                                    <span class="status-badge @estadoClass">@estadoTexto</span>
+                                    @if (estaBloqueado && equipo.PrioridadBloqueo.HasValue)
+                                    {
+                                        <div class="priority-badge @prioridadClass">@prioridadTexto</div>
+                                    }
+                                </td>
+                                <td>
+                                    @if (estaAsignado && !string.IsNullOrEmpty(equipo.AsignadoANombre))
+                                    {
+                                        <span class="equipo-asignado">@equipo.AsignadoANombre</span>
+                                    }
+                                    else if (estaBloqueado && !string.IsNullOrEmpty(equipo.MotivoBloqueo))
+                                    {
+                                        <span class="equipo-motivo">@equipo.MotivoBloqueo</span>
+                                    }
+                                </td>
+                                <td class="actions-cell">
+                                    @if (equipo.Estado == Domain.Enums.EstadoEquipo.Disponible)
+                                    {
+                                        <button type="button" class="btn-asignar" data-equipo-id="@equipo.Id" title="Asignar">
+                                            <span>👤</span>
+                                            <span>Asignar</span>
+                                        </button>
+                                        <button type="button" class="btn-bloquear" data-equipo-id="@equipo.Id" title="Bloquear">
+                                            <span>🔒</span>
+                                            <span>Bloquear</span>
+                                        </button>
+                                    }
+                                    else if (estaAsignado)
+                                    {
+                                        <button type="button" class="btn-liberar" data-equipo-id="@equipo.Id" title="Liberar">
+                                            <span>🔓</span>
+                                            <span>Liberar</span>
+                                        </button>
+                                        <button type="button" class="btn-bloquear" data-equipo-id="@equipo.Id" title="Bloquear">
+                                            <span>🔒</span>
+                                            <span>Bloquear</span>
+                                        </button>
+                                    }
+                                    else if (estaBloqueado)
+                                    {
+                                        <button type="button" class="btn-liberar" data-equipo-id="@equipo.Id" title="Liberar">
+                                            <span>🔓</span>
+                                            <span>Liberar</span>
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="no-data">No hay equipos registrados</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Asignar Equipo -->
+<div id="asignarModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title">Asignar Equipo</h2>
+            <p class="modal-subtitle" id="asignarSubtitle">Selecciona el usuario para asignar el equipo</p>
+            <button type="button" class="modal-close" id="closeAsignarModal">✕</button>
+        </div>
+
+        <div id="modalMessageAsignar" class="modal-message" style="display: none;"></div>
+
+        <form id="asignarForm" class="modal-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="asignarEquipoId" />
+
+            <div class="form-field">
+                <label for="UsuarioId">Usuario *</label>
+                <select id="UsuarioId" name="UsuarioId" required>
+                    <option value="">Selecciona un usuario</option>
+                    @if (ViewBag.Usuarios != null)
+                    {
+                        @foreach (var usuario in (IList<Services.Models.UserModels.UserModel>)ViewBag.Usuarios)
+                        {
+                            <option value="@usuario.Id">@usuario.Nombre @usuario.Apellido - @usuario.Email</option>
+                        }
+                    }
+                </select>
+                <span class="field-error"></span>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="btnCancelAsignar">Cancelar</button>
+                <button type="submit" class="btn-asignar" id="btnAsignar">Asignar Equipo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Bloquear Equipo -->
+<div id="bloquearModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title">Bloquear Equipo</h2>
+            <p class="modal-subtitle" id="bloquearSubtitle">Ingresa el motivo y prioridad para bloquear el equipo</p>
+            <button type="button" class="modal-close" id="closeBloquearModal">✕</button>
+        </div>
+
+        <div id="modalMessageBloquear" class="modal-message" style="display: none;"></div>
+
+        <form id="bloquearForm" class="modal-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="bloquearEquipoId" />
+
+            <div class="form-field">
+                <label for="MotivoBloqueo">Motivo del Bloqueo *</label>
+                <textarea id="MotivoBloqueo" name="MotivoBloqueo" maxlength="500" rows="4"></textarea>
+                <span class="field-error"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="PrioridadBloqueo">Prioridad *</label>
+                <select id="PrioridadBloqueo" name="PrioridadBloqueo" required>
+                    <option value="1">Media</option>
+                    <option value="0">Baja</option>
+                    <option value="2">Alta</option>
+                    <option value="3">Urgente</option>
+                </select>
+                <span class="field-error"></span>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="btnCancelBloquear">Cancelar</button>
+                <button type="submit" class="btn-bloquear" id="btnBloquearEquipo">Bloquear Equipo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let currentEquipoId = null;
+
+            // Abrir modal de asignar
+            $(document).on('click', '.btn-asignar', function () {
+                currentEquipoId = $(this).data('equipo-id');
+                const equipoCodigo = $(this).closest('tr').find('.equipo-codigo').text();
+                $('#asignarSubtitle').text(`Selecciona el usuario para asignar el equipo ${equipoCodigo}`);
+                $('#asignarEquipoId').val(currentEquipoId);
+                $('#asignarForm')[0].reset();
+                $('#UsuarioId').val('');
+                $('#asignarModal').fadeIn(300);
+            });
+
+            // Cerrar modal de asignar
+            $('#closeAsignarModal, #btnCancelAsignar').on('click', function () {
+                $('#asignarModal').fadeOut(300);
+                $('#asignarForm')[0].reset();
+                $('#modalMessageAsignar').hide();
+            });
+
+            // Cerrar modal al hacer clic fuera
+            $('#asignarModal').on('click', function (e) {
+                if ($(e.target).is('#asignarModal')) {
+                    $(this).fadeOut(300);
+                    $('#asignarForm')[0].reset();
+                    $('#modalMessageAsignar').hide();
+                }
+            });
+
+            // Enviar formulario de asignar
+            $('#asignarForm').on('submit', async function (e) {
+                e.preventDefault();
+
+                const formData = {
+                    id: $('#asignarEquipoId').val(),
+                    UsuarioId: $('#UsuarioId').val(),
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                };
+
+                $('#btnAsignar').prop('disabled', true).text('Asignando...');
+
+                try {
+                    const response = await fetch('/Coordinador/AsignarEquipo', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': formData.__RequestVerificationToken
+                        },
+                        body: new URLSearchParams(formData).toString()
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        $('#asignarModal').fadeOut(300);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showMessage(data.message, 'error', '#modalMessageAsignar');
+                    }
+                } catch (error) {
+                    showMessage('Ocurrió un error al asignar el equipo', 'error', '#modalMessageAsignar');
+                } finally {
+                    $('#btnAsignar').prop('disabled', false).text('Asignar Equipo');
+                }
+            });
+
+            // Abrir modal de bloquear (solo botones de la tabla, no el del formulario)
+            $(document).on('click', 'table .btn-bloquear', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                currentEquipoId = $(this).data('equipo-id');
+                const equipoCodigo = $(this).closest('tr').find('.equipo-codigo').text();
+                $('#bloquearSubtitle').text(`Ingresa el motivo y prioridad para bloquear el equipo ${equipoCodigo}`);
+                $('#bloquearEquipoId').val(currentEquipoId);
+                $('#bloquearForm')[0].reset();
+                $('#MotivoBloqueo').val('');
+                $('#PrioridadBloqueo').val('1');
+                $('#modalMessageBloquear').hide();
+                $('#bloquearModal').fadeIn(300);
+            });
+
+            // Cerrar modal de bloquear
+            $('#closeBloquearModal, #btnCancelBloquear').on('click', function () {
+                $('#bloquearModal').fadeOut(300);
+                $('#bloquearForm')[0].reset();
+                $('#modalMessageBloquear').hide();
+            });
+
+            // Cerrar modal al hacer clic fuera
+            $('#bloquearModal').on('click', function (e) {
+                if ($(e.target).is('#bloquearModal')) {
+                    $(this).fadeOut(300);
+                    $('#bloquearForm')[0].reset();
+                    $('#modalMessageBloquear').hide();
+                }
+            });
+
+            // Enviar formulario de bloquear
+            $('#bloquearForm').on('submit', async function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                console.log('Form submit triggered');
+
+                const motivoBloqueo = $('#MotivoBloqueo').val();
+                const equipoId = $('#bloquearEquipoId').val();
+                
+                console.log('Motivo:', motivoBloqueo);
+                console.log('Equipo ID:', equipoId);
+
+                if (!motivoBloqueo || motivoBloqueo.trim() === '') {
+                    showMessage('El motivo del bloqueo es requerido', 'error', '#modalMessageBloquear');
+                    return false;
+                }
+
+                if (!equipoId || equipoId === '') {
+                    showMessage('El ID del equipo es requerido', 'error', '#modalMessageBloquear');
+                    return false;
+                }
+
+                const formData = {
+                    id: equipoId,
+                    MotivoBloqueo: motivoBloqueo.trim(),
+                    PrioridadBloqueo: parseInt($('#PrioridadBloqueo').val()),
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                };
+
+                const $btnBloquear = $('#btnBloquearEquipo');
+                const originalText = $btnBloquear.text();
+                $btnBloquear.prop('disabled', true).text('Bloqueando...');
+                $('#modalMessageBloquear').hide();
+
+                // Prevenir que el formulario se resetee
+                $(this).off('reset');
+
+                try {
+                    const params = new URLSearchParams();
+                    params.append('id', formData.id);
+                    params.append('MotivoBloqueo', formData.MotivoBloqueo);
+                    params.append('PrioridadBloqueo', formData.PrioridadBloqueo.toString());
+                    params.append('__RequestVerificationToken', formData.__RequestVerificationToken);
+
+                    console.log('Sending request with:', {
+                        id: formData.id,
+                        MotivoBloqueo: formData.MotivoBloqueo,
+                        PrioridadBloqueo: formData.PrioridadBloqueo
+                    });
+
+                    const response = await fetch('/Coordinador/BloquearEquipo', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': formData.__RequestVerificationToken
+                        },
+                        body: params.toString()
+                    });
+
+                    console.log('Response status:', response.status);
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Error response:', errorText);
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log('Response data:', data);
+
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        setTimeout(() => {
+                            $('#bloquearModal').fadeOut(300, function() {
+                                location.reload();
+                            });
+                        }, 500);
+                    } else {
+                        showMessage(data.message || 'Error al bloquear el equipo', 'error', '#modalMessageBloquear');
+                        $btnBloquear.prop('disabled', false).text(originalText);
+                    }
+                } catch (error) {
+                    console.error('Error al bloquear equipo:', error);
+                    showMessage('Ocurrió un error al bloquear el equipo. Por favor intenta de nuevo. Error: ' + error.message, 'error', '#modalMessageBloquear');
+                    $btnBloquear.prop('disabled', false).text(originalText);
+                }
+
+                return false;
+            });
+
+            // Liberar equipo
+            $(document).on('click', '.btn-liberar', async function () {
+                const equipoId = $(this).data('equipo-id');
+                const equipoCodigo = $(this).closest('tr').find('.equipo-codigo').text();
+                
+                if (!confirm(`¿Estás seguro de que deseas liberar el equipo ${equipoCodigo}?`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/Coordinador/LiberarEquipo', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        body: `id=${equipoId}&__RequestVerificationToken=${$('input[name="__RequestVerificationToken"]').val()}`
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showMessage(data.message, 'error');
+                    }
+                } catch (error) {
+                    showMessage('Ocurrió un error al liberar el equipo', 'error');
+                }
+            });
+
+            // Búsqueda
+            $('#searchInput').on('keyup', function () {
+                const searchTerm = $(this).val().toLowerCase();
+                filterTable(searchTerm, $('#filterEstado').val());
+            });
+
+            // Filtro por estado
+            $('#filterEstado').on('change', function () {
+                filterTable($('#searchInput').val().toLowerCase(), $(this).val());
+            });
+
+            function filterTable(searchTerm, estadoFilter) {
+                $('#equiposTableBody tr').each(function () {
+                    const codigo = $(this).find('.equipo-codigo').text().toLowerCase();
+                    const sala = $(this).find('td').eq(1).text().toLowerCase();
+                    const estado = $(this).data('estado')?.toString() || '';
+
+                    const matchesSearch = codigo.includes(searchTerm) || sala.includes(searchTerm);
+                    let matchesEstado = true;
+                    
+                    if (estadoFilter === '2') {
+                        // Bloqueados incluye EnMantenimiento (2) y Dañado (3)
+                        matchesEstado = estado === '2' || estado === '3';
+                    } else if (estadoFilter) {
+                        matchesEstado = estado === estadoFilter;
+                    }
+
+                    $(this).toggle(matchesSearch && matchesEstado);
+                });
+            }
+
+            function showMessage(message, type, container = '#messageContainer') {
+                const $container = $(container);
+                $container.removeClass('message-success message-error')
+                    .addClass(type === 'success' ? 'message-success' : 'message-error')
+                    .text(message)
+                    .fadeIn(300);
+
+                if (type === 'success') {
+                    setTimeout(() => {
+                        $container.fadeOut(300);
+                    }, 3000);
+                }
+            }
+        });
+    </script>
+}
+
