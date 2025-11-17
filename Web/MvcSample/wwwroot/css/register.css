@@ -1,36 +1,11 @@
-/* Estilos específicos para la vista de Recuperar Contraseña */
+/* Estilos adicionales para la vista de registro */
 
-.recovery-icon {
-    background: linear-gradient(135deg, #ec4899, #f97316);
+.register-icon {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
 }
 
-/* Si quieres, incluso puedes sobreescribir cosas del login solo aquí */
-
+/* Un poquito mÃ¡s de espacio para tantos campos */
 .login-card {
-    max-width: 420px;
+    padding-top: 36px;
+    padding-bottom: 30px;
 }
-
-.recovery-back {
-    margin-top: 16px;
-}
-
-.recovery-back-button {
-    display: block;
-    width: 100%;
-    text-align: center;
-    padding: 10px 14px;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    background-color: #ffffff;
-    color: #374151;
-    font-size: 14px;
-    font-weight: 500;
-    text-decoration: none;
-    transition: background-color 0.12s ease, box-shadow 0.12s ease, transform 0.06s ease;
-}
-
-    .recovery-back-button:hover {
-        background-color: #f9fafb;
-        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
-        transform: translateY(-1px);
-    }

@@ -1,12 +1,29 @@
+/* Reset global para pÃ¡ginas de login */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+}
+
 /* === Login Page === */
 .login-page {
-    min-height: calc(100vh - 80px); /* ajusta 80 según la altura de header/footer */
+    min-height: 100vh;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 40px 16px;
-    background: linear-gradient(135deg, #5b3dfd, #ff4ba8);
+    padding: 0;
+    margin: 0;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
 }
 
 
@@ -17,7 +34,8 @@
     background-color: #ffffff;
     border-radius: 26px;
     padding: 32px 32px 28px;
-    box-shadow: 0 22px 45px rgba(15, 16, 51, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.35);
+    box-shadow: 0 22px 45px rgba(15, 16, 51, 0.25);
+    border: none;
 }
 
 /* Header */
@@ -35,10 +53,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #7c3aed, #ec4899);
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: #ffffff;
     font-size: 30px;
-    box-shadow: 0 16px 35px rgba(124, 58, 237, 0.6);
+    box-shadow: 0 16px 35px rgba(59, 130, 246, 0.6);
 }
 
 .login-title {
@@ -110,15 +128,16 @@
 
 .login-link {
     font-size: 13px;
-    color: #7c3aed;
+    color: #3b82f6;
     text-decoration: none;
 }
 
     .login-link:hover {
         text-decoration: underline;
+        color: #2563eb;
     }
 
-/* Botón principal */
+/* BotÃ³n principal */
 
 .login-button {
     width: 100%;
@@ -133,26 +152,27 @@
     font-weight: 600;
     color: #ffffff;
     cursor: pointer;
-    background: linear-gradient(135deg, #4f46e5, #ec4899);
-    box-shadow: 0 14px 30px rgba(79, 70, 229, 0.5);
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    box-shadow: 0 14px 30px rgba(59, 130, 246, 0.5);
     transition: transform 0.08s ease, box-shadow 0.08s ease;
 }
 
     .login-button:hover {
         transform: translateY(-1px);
-        box-shadow: 0 18px 36px rgba(79, 70, 229, 0.6);
+        box-shadow: 0 18px 36px rgba(59, 130, 246, 0.6);
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
     }
 
     .login-button:active {
         transform: translateY(0);
-        box-shadow: 0 8px 18px rgba(79, 70, 229, 0.45);
+        box-shadow: 0 8px 18px rgba(59, 130, 246, 0.45);
     }
 
 .login-button-arrow {
     font-size: 16px;
 }
 
-/* Acceso rápido */
+/* Acceso rÃ¡pido */
 
 .login-quick-access {
     margin-top: 22px;
@@ -247,25 +267,26 @@
     justify-content: center;
     padding: 9px 18px;
     border-radius: 999px;
-    border: 1px solid rgba(148, 163, 184, 0.7);
+    border: 1px solid rgba(59, 130, 246, 0.5);
     background-color: #ffffff;
     font-size: 14px;
     font-weight: 600;
-    color: #4f46e5;
+    color: #3b82f6;
     text-decoration: none;
-    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+    box-shadow: 0 10px 22px rgba(59, 130, 246, 0.12);
     transition: background-color 0.12s ease, box-shadow 0.12s ease, transform 0.06s ease;
 }
 
     .login-register-button:hover {
-        background-color: #eef2ff;
-        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.16);
+        background-color: #eff6ff;
+        box-shadow: 0 14px 28px rgba(59, 130, 246, 0.16);
         transform: translateY(-1px);
+        color: #2563eb;
     }
 
     .login-register-button:active {
         transform: translateY(0);
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+        box-shadow: 0 8px 18px rgba(59, 130, 246, 0.12);
     }
 
 .login-error {
