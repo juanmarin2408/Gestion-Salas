@@ -27,234 +27,7 @@
 
 @section Styles {
     <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
-    <style>
-        .tab-badge {
-            background-color: #ef4444;
-            color: #ffffff;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 6px;
-        }
-
-        .calendario-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .calendario-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #0f172a;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .calendario-nav {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .btn-nav {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: #ffffff;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .btn-nav:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        .btn-nav:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-today {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-        }
-
-        .calendario-filters {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .filter-select {
-            padding: 10px 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 14px;
-            background-color: #ffffff;
-            cursor: pointer;
-            transition: border-color 0.2s ease;
-            min-width: 200px;
-        }
-
-        .filter-select:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .calendario-container {
-            background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
-            overflow: hidden;
-        }
-
-        .calendario-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .calendario-table thead {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: #ffffff;
-        }
-
-        .calendario-table th {
-            padding: 16px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .calendario-table th:first-child {
-            width: 100px;
-            text-align: left;
-            padding-left: 20px;
-        }
-
-        .calendario-table td {
-            padding: 4px;
-            vertical-align: top;
-            height: 80px;
-            border: 1px solid #e5e7eb;
-        }
-
-        .calendario-table tbody tr:hover td {
-            background-color: #f9fafb;
-        }
-
-        .calendario-table tbody tr:hover td.slot-cell {
-            background-color: transparent;
-        }
-
-        .time-cell {
-            padding: 8px 16px;
-            font-weight: 600;
-            color: #0f172a;
-            font-size: 14px;
-            text-align: left;
-            border-right: 2px solid #e5e7eb;
-            background-color: #f9fafb;
-            width: 100px;
-        }
-
-        .slot-cell {
-            position: relative;
-            min-height: 80px;
-            padding: 4px;
-            height: 100%;
-        }
-
-        .slot-libre {
-            background-color: #d1fae5;
-            color: #065f46;
-            font-size: 11px;
-            font-weight: 500;
-            text-align: center;
-            padding: 20px 4px;
-            height: 100%;
-            border-radius: 4px;
-        }
-
-        .slot-ocupado {
-            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-            color: #1e40af;
-            font-size: 12px;
-            font-weight: 600;
-            text-align: center;
-            padding: 8px 4px;
-            height: 100%;
-            border-radius: 8px;
-            border: 2px solid #3b82f6;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .slot-ocupado:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-
-        .slot-ocupado-sala {
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-            color: #92400e;
-            border-color: #f59e0b;
-        }
-
-        .ocupacion-nombre {
-            font-weight: 600;
-            font-size: 12px;
-        }
-
-        .ocupacion-hora {
-            font-size: 10px;
-            opacity: 0.8;
-        }
-
-        .semana-info {
-            font-size: 16px;
-            font-weight: 600;
-            color: #374151;
-            margin: 0 12px;
-        }
-
-        @@media (max-width: 1200px) {
-            .calendario-table {
-                font-size: 11px;
-            }
-
-            .slot-ocupado {
-                font-size: 10px;
-                padding: 6px 2px;
-            }
-
-            .ocupacion-nombre {
-                font-size: 10px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="~/css/coordinador-calendario.css" asp-append-version="true" />
 }
 
 <div class="admin-page">
@@ -335,7 +108,7 @@
                 <button type="button" class="btn-nav btn-today" id="btnHoy">
                     Hoy
                 </button>
-                <span class="semana-info" id="semanaInfo">
+                <span class="semana-info" id="semanaInfo" data-fecha-semana="@lunesSemana.ToString("yyyy-MM-dd")">
                     @lunesSemana.ToString("dd/MM/yyyy") - @lunesSemana.AddDays(4).ToString("dd/MM/yyyy")
                 </span>
                 <button type="button" class="btn-nav" id="btnSiguienteSemana">
@@ -346,7 +119,7 @@
         </div>
 
         <div class="calendario-filters">
-            <select id="filterSala" class="filter-select">
+            <select id="filterSala" class="filter-select" data-sala-filtro="@(ViewBag.SalaFiltro?.ToString() ?? "")">
                 <option value="">Selecciona una sala</option>
                 @if (ViewBag.Salas != null)
                 {
@@ -449,82 +222,23 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/coordinador-calendario.js" asp-append-version="true"></script>
     <script>
         $(document).ready(function () {
-            let fechaSemana = '@lunesSemana.ToString("yyyy-MM-dd")';
-            let salaFiltro = '@(ViewBag.SalaFiltro?.ToString() ?? "")';
+            // Inicializar variables desde los data attributes
+            let fechaSemana = $('#semanaInfo').data('fecha-semana') || '';
+            let salaFiltro = $('#filterSala').data('sala-filtro') || '';
 
             // Inicializar el filtro de sala si hay uno seleccionado
             if (salaFiltro) {
                 $('#filterSala').val(salaFiltro);
             }
 
-            // Navegación de semanas
-            $('#btnAnteriorSemana').on('click', function () {
-                const partes = fechaSemana.split('-');
-                const fecha = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
-                fecha.setDate(fecha.getDate() - 7);
-                const año = fecha.getFullYear();
-                const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-                const dia = String(fecha.getDate()).padStart(2, '0');
-                fechaSemana = año + '-' + mes + '-' + dia;
-                cargarCalendario();
-            });
-
-            $('#btnSiguienteSemana').on('click', function () {
-                const partes = fechaSemana.split('-');
-                const fecha = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
-                fecha.setDate(fecha.getDate() + 7);
-                const año = fecha.getFullYear();
-                const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-                const dia = String(fecha.getDate()).padStart(2, '0');
-                fechaSemana = año + '-' + mes + '-' + dia;
-                cargarCalendario();
-            });
-
-            $('#btnHoy').on('click', function () {
-                const hoy = new Date();
-                const diaSemana = hoy.getDay() === 0 ? 7 : hoy.getDay();
-                const lunes = new Date(hoy);
-                lunes.setDate(hoy.getDate() - (diaSemana - 1));
-                const año = lunes.getFullYear();
-                const mes = String(lunes.getMonth() + 1).padStart(2, '0');
-                const dia = String(lunes.getDate()).padStart(2, '0');
-                fechaSemana = año + '-' + mes + '-' + dia;
-                cargarCalendario();
-            });
-
-            // Filtro por sala
-            $('#filterSala').on('change', function () {
-                salaFiltro = $(this).val();
-                if (!salaFiltro) {
-                    // Si no hay sala seleccionada, mantener la primera
-                    salaFiltro = $('#filterSala option:not([value=""])').first().val();
-                    $(this).val(salaFiltro);
-                }
-                cargarCalendario();
-            });
-
-            function cargarCalendario() {
-                const url = new URL('/Coordinador/Calendario', window.location.origin);
-                url.searchParams.append('fechaSemana', fechaSemana);
-                if (salaFiltro) {
-                    url.searchParams.append('salaId', salaFiltro);
-                }
-
-                window.location.href = url.toString();
-            }
-
-            // Formatear fecha para mostrar
-            function formatearSemana(fecha) {
-                const fechaObj = new Date(fecha);
-                const lunes = new Date(fechaObj);
-                const viernes = new Date(fechaObj);
-                viernes.setDate(lunes.getDate() + 4);
-                
-                const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
-                return lunes.toLocaleDateString('es-ES', opciones) + ' - ' + viernes.toLocaleDateString('es-ES', opciones);
-            }
+            // Actualizar variables globales para que el archivo externo las use
+            window.calendarioConfig = {
+                fechaSemana: fechaSemana,
+                salaFiltro: salaFiltro
+            };
         });
     </script>
 }

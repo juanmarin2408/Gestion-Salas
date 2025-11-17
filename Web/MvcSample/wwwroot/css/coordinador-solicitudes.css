@@ -1,0 +1,104 @@
+.tab-badge {
+    background-color: #ef4444;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+}
+
+.urgent-label {
+    background-color: #fee2e2;
+    color: #dc2626;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.status-pendiente {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+.status-aprobada {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-rechazada {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.btn-aprobar {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: transform 0.2s ease;
+}
+
+.btn-aprobar:hover {
+    transform: translateY(-1px);
+}
+
+.btn-rechazar {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: transform 0.2s ease;
+}
+
+.btn-rechazar:hover {
+    transform: translateY(-1px);
+}
+
+.solicitud-user {
+    display: flex;
+    flex-direction: column;
+}
+
+.solicitud-user-name {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.solicitud-user-email {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.solicitud-fecha-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.equipo-asignado {
+    font-size: 12px;
+    color: #059669;
+    margin-top: 4px;
+    font-weight: 500;
+}
+

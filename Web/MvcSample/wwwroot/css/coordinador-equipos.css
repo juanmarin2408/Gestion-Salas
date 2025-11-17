@@ -1,0 +1,128 @@
+.tab-badge {
+    background-color: #ef4444;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+}
+
+.status-disponible {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-asignado {
+    background-color: #dbeafe;
+    color: #2563eb;
+}
+
+.status-bloqueado {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+.priority-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.priority-baja {
+    background-color: #e5e7eb;
+    color: #6b7280;
+}
+
+.priority-media {
+    background-color: #fef3c7;
+    color: #d97706;
+}
+
+.priority-alta {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.priority-urgente {
+    background-color: #dc2626;
+    color: #ffffff;
+}
+
+.btn-asignar {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: transform 0.2s ease;
+}
+
+.btn-asignar:hover {
+    transform: translateY(-1px);
+}
+
+.btn-bloquear {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: transform 0.2s ease;
+}
+
+.btn-bloquear:hover {
+    transform: translateY(-1px);
+}
+
+.btn-liberar {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: transform 0.2s ease;
+}
+
+.btn-liberar:hover {
+    transform: translateY(-1px);
+}
+
+.equipo-asignado {
+    font-size: 13px;
+    color: #0f172a;
+    font-weight: 500;
+}
+
+.equipo-motivo {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.equipo-codigo {
+    font-weight: 600;
+    color: #0f172a;
+}
+
