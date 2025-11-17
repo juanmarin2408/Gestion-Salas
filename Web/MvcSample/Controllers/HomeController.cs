@@ -67,6 +67,7 @@ namespace MvcSample.Controllers
                 HttpContext.Session.SetString("Documento", usuario.Documento);
                 HttpContext.Session.SetString("Email", usuario.Email);
                 HttpContext.Session.SetString("Nombre", usuario.Nombre);
+                HttpContext.Session.SetString("Apellido", usuario.Apellido ?? "");
                 HttpContext.Session.SetString("Rol", usuario.Rol.ToString());
 
                 // Redirigir según el rol

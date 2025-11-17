@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Services;
 using Services.Models.SalaModels;
 using Domain.Enums;
+using MvcSample.Filters;
 
 namespace MvcSample.Controllers
 {
+    [AuthorizeRole(RolUsuario.Administrador)]
     public class SalaController : Controller
     {
         private readonly ISalaService _salaService;

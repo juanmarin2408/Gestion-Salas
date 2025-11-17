@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Services;
 using Services.Models.EquipoModels;
 using Domain.Enums;
+using MvcSample.Filters;
 
 namespace MvcSample.Controllers
 {
+    [AuthorizeRole(RolUsuario.Administrador)]
     public class EquipoController : Controller
     {
         private readonly IEquipoService _equipoService;

@@ -7,7 +7,7 @@ namespace Domain
     public class Equipo
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; }     
 
         [Required]
         public Guid SalaId { get; set; }

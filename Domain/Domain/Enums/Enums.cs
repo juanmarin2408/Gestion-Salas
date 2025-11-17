@@ -28,4 +28,27 @@ namespace Domain.Enums
         Baja = 4
     }
 
+    public enum EstadoSolicitud
+    {
+        Pendiente = 0,
+        Aprobada = 1,
+        Rechazada = 2
+    }
+
+    public enum EstadoReporte
+    {
+        Pendiente = 0,
+        EnRevision = 1,
+        Resuelto = 2,
+        Rechazado = 3
+    }
+
+    public enum PrioridadReporte
+    {
+        Baja = 0,
+        Media = 1,
+        Alta = 2,
+        Urgente = 3
+    }
+
 }

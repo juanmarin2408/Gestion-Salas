@@ -1,0 +1,468 @@
+@model IList<Services.Models.SolicitudModels.SolicitudModel>
+@{
+    ViewData["Title"] = "Solicitudes de Préstamo";
+    ViewBag.HideFooter = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/salas.css" asp-append-version="true" />
+    <style>
+        .tab-badge {
+            background-color: #ef4444;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+
+        .urgent-label {
+            background-color: #fee2e2;
+            color: #dc2626;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        .status-pendiente {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-aprobada {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rechazada {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-aprobar {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-aprobar:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-rechazar {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-rechazar:hover {
+            transform: translateY(-1px);
+        }
+
+        .solicitud-user {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .solicitud-user-name {
+            font-weight: 600;
+            color: #0f172a;
+            font-size: 14px;
+        }
+
+        .solicitud-user-email {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .solicitud-fecha-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .equipo-asignado {
+            font-size: 12px;
+            color: #059669;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+    </style>
+}
+
+<div class="admin-page">
+    <!-- HEADER -->
+    <header class="admin-header">
+        <div class="admin-header-left">
+            <div class="admin-logo-icon">
+                <span class="material-icon">▤</span>
+            </div>
+            <div class="admin-logo-text">
+                <div class="admin-app-name">Sistema de Salas</div>
+                <div class="admin-app-subtitle">Universidad Santiago de Cali</div>
+            </div>
+        </div>
+
+        <div class="admin-header-right">
+            <form asp-controller="Home" asp-action="Logout" method="post" style="display: inline;">
+                <button type="submit" class="admin-logout" style="border: none; background: none; cursor: pointer; padding: 0;">
+                    <span class="admin-logout-icon">⟲</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+
+            <div class="admin-user-card">
+                <div class="admin-user-avatar">@(Context.Session.GetString("Nombre")?.Substring(0, 1).ToUpper() ?? "C")@(Context.Session.GetString("Apellido")?.Substring(0, 1).ToUpper() ?? "P")</div>
+                <div class="admin-user-text">
+                    <div class="admin-user-name">@(Context.Session.GetString("Nombre") ?? "Coordinador") @(Context.Session.GetString("Apellido") ?? "")</div>
+                    <div class="admin-user-role">Coordinador</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="admin-tabs">
+        <a asp-controller="Coordinador" asp-action="Index" class="admin-tab">
+            <span class="admin-tab-icon">📊</span>
+            <span>Resumen</span>
+        </a>
+        <a asp-controller="Coordinador" asp-action="Solicitudes" class="admin-tab active">
+            <span class="admin-tab-icon">📋</span>
+            <span>Solicitudes</span>
+            @if ((ViewBag.SolicitudesPendientes ?? 0) > 0)
+            {
+                <span class="tab-badge">@(ViewBag.SolicitudesPendientes)</span>
+            }
+        </a>
+        <button class="admin-tab">
+            <span class="admin-tab-icon">💻</span>
+            <span>Equipos</span>
+        </button>
+        <button class="admin-tab">
+            <span class="admin-tab-icon">📄</span>
+            <span>Reportes</span>
+            @if ((ViewBag.ReportesDanos ?? 0) > 0)
+            {
+                <span class="tab-badge">@(ViewBag.ReportesDanos)</span>
+            }
+        </button>
+        <button class="admin-tab">
+            <span class="admin-tab-icon">📅</span>
+            <span>Calendario</span>
+        </button>
+        <button class="admin-tab">
+            <span class="admin-tab-icon">📈</span>
+            <span>Estadísticas</span>
+        </button>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="admin-main">
+        <div class="salas-header">
+            <h1 class="salas-title">Solicitudes de Préstamo</h1>
+            <div class="salas-actions">
+                <div class="salas-search-filter">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Buscar por usuario o sala..." />
+                    </div>
+                    <select id="filterEstado" class="filter-select">
+                        <option value="">Todos los estados</option>
+                        <option value="0">Pendientes</option>
+                        <option value="1">Aprobadas</option>
+                        <option value="2">Rechazadas</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensajes -->
+        <div id="messageContainer" style="display: none;"></div>
+
+        <!-- Tabla de Solicitudes -->
+        <div class="salas-table-container">
+            <table class="salas-table">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Sala</th>
+                        <th>Tiempo Estimado</th>
+                        <th>Fecha Solicitud</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="solicitudesTableBody">
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var solicitud in Model)
+                        {
+                            var esUrgente = solicitud.FechaSolicitud.AddHours(24) < DateTime.UtcNow && solicitud.Estado == Domain.Enums.EstadoSolicitud.Pendiente;
+                            var estadoClass = solicitud.Estado switch
+                            {
+                                Domain.Enums.EstadoSolicitud.Pendiente => "status-pendiente",
+                                Domain.Enums.EstadoSolicitud.Aprobada => "status-aprobada",
+                                Domain.Enums.EstadoSolicitud.Rechazada => "status-rechazada",
+                                _ => ""
+                            };
+                            var estadoTexto = solicitud.Estado switch
+                            {
+                                Domain.Enums.EstadoSolicitud.Pendiente => "Pendiente",
+                                Domain.Enums.EstadoSolicitud.Aprobada => "Aprobada",
+                                Domain.Enums.EstadoSolicitud.Rechazada => "Rechazada",
+                                _ => "Desconocido"
+                            };
+
+                            <tr data-solicitud-id="@solicitud.Id" data-estado="@((int)solicitud.Estado)">
+                                <td>
+                                    <div class="solicitud-user">
+                                        <span class="solicitud-user-name">@solicitud.UsuarioNombre</span>
+                                        <span class="solicitud-user-email">@solicitud.UsuarioEmail</span>
+                                    </div>
+                                </td>
+                                <td>@solicitud.SalaNumero</td>
+                                <td>@solicitud.TiempoEstimado horas</td>
+                                <td>
+                                    <div class="solicitud-fecha-info">
+                                        <span>@solicitud.FechaSolicitud.ToString("yyyy-MM-dd HH:mm")</span>
+                                        @if (esUrgente)
+                                        {
+                                            <span class="urgent-label">Urgente (>24h)</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="status-badge @estadoClass">@estadoTexto</span>
+                                    @if (solicitud.Estado == Domain.Enums.EstadoSolicitud.Aprobada && solicitud.EquipoId.HasValue)
+                                    {
+                                        <div class="equipo-asignado">Equipo: @solicitud.EquipoCodigo</div>
+                                    }
+                                </td>
+                                <td class="actions-cell">
+                                    @if (solicitud.Estado == Domain.Enums.EstadoSolicitud.Pendiente)
+                                    {
+                                        <button type="button" class="btn-aprobar" data-solicitud-id="@solicitud.Id" title="Aprobar">
+                                            <span>✓</span>
+                                            <span>Aprobar</span>
+                                        </button>
+                                        <button type="button" class="btn-rechazar" data-solicitud-id="@solicitud.Id" title="Rechazar">
+                                            <span>✕</span>
+                                            <span>Rechazar</span>
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="no-data">No hay solicitudes registradas</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Rechazar Solicitud -->
+<div id="rechazarModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title">Rechazar Solicitud</h2>
+            <p class="modal-subtitle" id="rechazarSubtitle">Ingresa el motivo del rechazo</p>
+            <button type="button" class="modal-close" id="closeRechazarModal">✕</button>
+        </div>
+
+        <div id="modalMessageRechazar" class="modal-message" style="display: none;"></div>
+
+        <form id="rechazarForm" class="modal-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="rechazarSolicitudId" />
+
+            <div class="form-field">
+                <label for="MotivoRechazo">Motivo del Rechazo *</label>
+                <textarea id="MotivoRechazo" name="MotivoRechazo" required maxlength="500" rows="4" placeholder="Ej: No hay equipos disponibles en la sala solicitada..."></textarea>
+                <span class="field-error"></span>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="btnCancelRechazar">Cancelar</button>
+                <button type="submit" class="btn-rechazar" id="btnRechazar">Rechazar Solicitud</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let currentSolicitudId = null;
+
+            // Aprobar solicitud
+            $(document).on('click', '.btn-aprobar', async function () {
+                const solicitudId = $(this).data('solicitud-id');
+                
+                if (!confirm('¿Estás seguro de que deseas aprobar esta solicitud?')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/Coordinador/AprobarSolicitud', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        body: `id=${solicitudId}&__RequestVerificationToken=${$('input[name="__RequestVerificationToken"]').val()}`
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showMessage(data.message, 'error');
+                    }
+                } catch (error) {
+                    showMessage('Ocurrió un error al aprobar la solicitud', 'error');
+                }
+            });
+
+            // Abrir modal de rechazar
+            $(document).on('click', '.btn-rechazar', function () {
+                currentSolicitudId = $(this).data('solicitud-id');
+                const usuarioNombre = $(this).closest('tr').find('.solicitud-user-name').text();
+                $('#rechazarSubtitle').text(`Ingresa el motivo del rechazo para ${usuarioNombre}`);
+                $('#rechazarSolicitudId').val(currentSolicitudId);
+                $('#rechazarForm')[0].reset();
+                $('#rechazarModal').fadeIn(300);
+            });
+
+            // Cerrar modal de rechazar
+            $('#closeRechazarModal, #btnCancelRechazar').on('click', function () {
+                $('#rechazarModal').fadeOut(300);
+                $('#rechazarForm')[0].reset();
+                $('#modalMessageRechazar').hide();
+            });
+
+            // Cerrar modal al hacer clic fuera
+            $('#rechazarModal').on('click', function (e) {
+                if ($(e.target).is('#rechazarModal')) {
+                    $(this).fadeOut(300);
+                    $('#rechazarForm')[0].reset();
+                    $('#modalMessageRechazar').hide();
+                }
+            });
+
+            // Enviar formulario de rechazar
+            $('#rechazarForm').on('submit', async function (e) {
+                e.preventDefault();
+
+                const formData = {
+                    id: $('#rechazarSolicitudId').val(),
+                    MotivoRechazo: $('#MotivoRechazo').val(),
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                };
+
+                $('#btnRechazar').prop('disabled', true).text('Rechazando...');
+
+                try {
+                    const response = await fetch('/Coordinador/RechazarSolicitud', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': formData.__RequestVerificationToken
+                        },
+                        body: new URLSearchParams(formData).toString()
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        $('#rechazarModal').fadeOut(300);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showMessage(data.message, 'error', '#modalMessageRechazar');
+                    }
+                } catch (error) {
+                    showMessage('Ocurrió un error al rechazar la solicitud', 'error', '#modalMessageRechazar');
+                } finally {
+                    $('#btnRechazar').prop('disabled', false).text('Rechazar Solicitud');
+                }
+            });
+
+            // Búsqueda
+            $('#searchInput').on('keyup', function () {
+                const searchTerm = $(this).val().toLowerCase();
+                filterTable(searchTerm, $('#filterEstado').val());
+            });
+
+            // Filtro por estado
+            $('#filterEstado').on('change', function () {
+                filterTable($('#searchInput').val().toLowerCase(), $(this).val());
+            });
+
+            function filterTable(searchTerm, estadoFilter) {
+                $('#solicitudesTableBody tr').each(function () {
+                    const usuario = $(this).find('.solicitud-user-name').text().toLowerCase();
+                    const email = $(this).find('.solicitud-user-email').text().toLowerCase();
+                    const sala = $(this).find('td').eq(1).text().toLowerCase();
+                    const estado = $(this).data('estado')?.toString() || '';
+
+                    const matchesSearch = usuario.includes(searchTerm) || email.includes(searchTerm) || sala.includes(searchTerm);
+                    const matchesEstado = !estadoFilter || estado === estadoFilter;
+
+                    $(this).toggle(matchesSearch && matchesEstado);
+                });
+            }
+
+            function showMessage(message, type, container = '#messageContainer') {
+                const $container = $(container);
+                $container.removeClass('message-success message-error')
+                    .addClass(type === 'success' ? 'message-success' : 'message-error')
+                    .text(message)
+                    .fadeIn(300);
+
+                if (type === 'success') {
+                    setTimeout(() => {
+                        $container.fadeOut(300);
+                    }, 3000);
+                }
+            }
+        });
+    </script>
+}
+

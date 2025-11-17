@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Services;
 using Services.Models.UserModels;
 using Domain.Enums;
+using MvcSample.Filters;
 
 namespace MvcSample.Controllers
 {
+    [AuthorizeRole(RolUsuario.Administrador)]
     public class UsuarioController : Controller
     {
         private readonly IUserService _userService;

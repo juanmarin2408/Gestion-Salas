@@ -1,5 +1,6 @@
 ﻿using Domain.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain
 {
@@ -33,6 +34,22 @@ namespace Domain
 
         // Relación: un Usuario puede ser responsable de varias Salas
         public List<Sala> Salas { get; set; } = new();
+
+        // Relación: un Usuario puede tener muchas Solicitudes de Préstamo
+        [InverseProperty("Usuario")]
+        public List<SolicitudPrestamo> SolicitudesPrestamo { get; set; } = new();
+
+        // Relación: un Usuario (Coordinador/Admin) puede aprobar muchas solicitudes
+        [InverseProperty("AprobadoPor")]
+        public List<SolicitudPrestamo> SolicitudesAprobadas { get; set; } = new();
+
+        // Relación: un Usuario puede hacer muchos Reportes de Daños
+        [InverseProperty("Usuario")]
+        public List<ReporteDano> ReportesDanos { get; set; } = new();
+
+        // Relación: un Usuario (Coordinador/Admin) puede resolver muchos reportes
+        [InverseProperty("ResueltoPor")]
+        public List<ReporteDano> ReportesResueltos { get; set; } = new();
 
     }
 }
