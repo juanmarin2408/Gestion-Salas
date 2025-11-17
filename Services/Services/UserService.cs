@@ -105,6 +105,55 @@ namespace Services
             return usuario != null;
         }
 
+        public async Task Update(Guid id, AddUserModel model)
+        {
+            var usuario = await _userRepository.GetUser(id);
+            if (usuario == null)
+            {
+                throw new InvalidOperationException("El usuario no existe.");
+            }
+
+            // Verificar si el email ya está en uso por otro usuario
+            var existingEmail = await _userRepository.GetByEmail(model.Email);
+            if (existingEmail != null && existingEmail.Id != id)
+            {
+                throw new InvalidOperationException("El correo ya está registrado por otro usuario.");
+            }
+
+            // Verificar si el documento ya está en uso por otro usuario
+            var existingDoc = await _userRepository.GetByDocumento(model.Documento);
+            if (existingDoc != null && existingDoc.Id != id)
+            {
+                throw new InvalidOperationException("El documento ya está registrado por otro usuario.");
+            }
+
+            // Actualizar campos
+            usuario.Nombre = model.Nombre;
+            usuario.Apellido = model.Apellido;
+            usuario.Documento = model.Documento;
+            usuario.Email = model.Email;
+            usuario.Rol = model.Rol;
+
+            // Si se proporcionó una nueva contraseña, actualizarla
+            if (!string.IsNullOrEmpty(model.Password))
+            {
+                usuario.PasswordHash = _passwordHasher.HashPassword(usuario, model.Password);
+            }
+
+            await _userRepository.Update(usuario);
+        }
+
+        public async Task Delete(Guid id)
+        {
+            var usuario = await _userRepository.GetUser(id);
+            if (usuario == null)
+            {
+                throw new InvalidOperationException("El usuario no existe.");
+            }
+
+            await _userRepository.Delete(id);
+        }
+
         public async Task ChangePasswordAsync(string email, string newPassword)
         {
             var usuario = await _userRepository.GetByEmail(email);

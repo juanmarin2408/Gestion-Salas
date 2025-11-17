@@ -1,0 +1,409 @@
+@model IList<Services.Models.EquipoModels.EquipoModel>
+@{
+    ViewData["Title"] = "Gestión de Equipos";
+    ViewBag.HideFooter = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/salas.css" asp-append-version="true" />
+}
+
+<div class="admin-page">
+    <!-- HEADER -->
+    <header class="admin-header">
+        <div class="admin-header-left">
+            <div class="admin-logo-icon">
+                <span class="material-icon">▤</span>
+            </div>
+            <div class="admin-logo-text">
+                <div class="admin-app-name">Sistema de Salas</div>
+                <div class="admin-app-subtitle">Universidad Santiago de Cali</div>
+            </div>
+        </div>
+
+        <div class="admin-header-right">
+            <form asp-controller="Home" asp-action="Logout" method="post" style="display: inline;">
+                <button type="submit" class="admin-logout" style="border: none; background: none; cursor: pointer;">
+                    <span class="admin-logout-icon">⟲</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+
+            <div class="admin-user-card">
+                <div class="admin-user-avatar">@(Context.Session.GetString("Nombre")?.Substring(0, 1).ToUpper() ?? "A")@(Context.Session.GetString("Apellido")?.Substring(0, 1).ToUpper() ?? "U")</div>
+                <div class="admin-user-text">
+                    <div class="admin-user-name">@(Context.Session.GetString("Nombre") ?? "Admin Usuario")</div>
+                    <div class="admin-user-role">Administrador</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="admin-tabs">
+        <a asp-controller="Admin" asp-action="Dashboard" class="admin-tab">
+            <span class="admin-tab-icon">📊</span>
+            <span>Resumen</span>
+        </a>
+        <a asp-controller="Sala" asp-action="Index" class="admin-tab">
+            <span class="admin-tab-icon">🏢</span>
+            <span>Salas</span>
+        </a>
+        <a asp-controller="Equipo" asp-action="Index" class="admin-tab active">
+            <span class="admin-tab-icon">💻</span>
+            <span>Equipos</span>
+        </a>
+        <button class="admin-tab">
+            <span class="admin-tab-icon">👥</span>
+            <span>Usuarios</span>
+        </button>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="admin-main">
+        <div class="salas-header">
+            <h1 class="salas-title">Gestión de Equipos</h1>
+            <div class="salas-actions">
+                <div class="salas-search-filter">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Buscar por código o sala..." />
+                    </div>
+                    <select id="filterSala" class="filter-select">
+                        <option value="">Todas las salas</option>
+                        @if (ViewBag.Salas != null)
+                        {
+                            @foreach (var sala in (IList<Services.Models.SalaModels.SalaModel>)ViewBag.Salas)
+                            {
+                                <option value="@sala.Id">@sala.Numero</option>
+                            }
+                        }
+                    </select>
+                    <select id="filterEstado" class="filter-select">
+                        <option value="">Todos los estados</option>
+                        <option value="0">Disponible</option>
+                        <option value="1">Asignado</option>
+                        <option value="2">En Mantenimiento</option>
+                        <option value="3">Dañado</option>
+                        <option value="4">Baja</option>
+                    </select>
+                </div>
+                <button type="button" class="btn-nueva-sala" id="btnNuevoEquipo">
+                    <span>+</span>
+                    <span>Nuevo Equipo</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mensajes -->
+        <div id="messageContainer" style="display: none;"></div>
+
+        <!-- Tabla de Equipos -->
+        <div class="salas-table-container">
+            <table class="salas-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Sala</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="equiposTableBody">
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var equipo in Model)
+                        {
+                                <tr data-equipo-id="@equipo.Id" data-sala-id="@equipo.SalaId">
+                                <td class="equipo-codigo">@equipo.Id.ToString().Substring(0, 8).ToUpper()</td>
+                                <td>
+                                    <span class="location-icon">🏢</span>
+                                    @equipo.SalaNumero
+                                </td>
+                                <td>
+                                    @{
+                                        var estadoClass = equipo.Estado switch
+                                        {
+                                            Domain.Enums.EstadoEquipo.Disponible => "status-active",
+                                            Domain.Enums.EstadoEquipo.Asignado => "status-assigned",
+                                            Domain.Enums.EstadoEquipo.EnMantenimiento => "status-maintenance",
+                                            Domain.Enums.EstadoEquipo.Dañado => "status-damaged",
+                                            Domain.Enums.EstadoEquipo.Baja => "status-inactive",
+                                            _ => ""
+                                        };
+                                        var estadoTexto = equipo.Estado switch
+                                        {
+                                            Domain.Enums.EstadoEquipo.Disponible => "Disponible",
+                                            Domain.Enums.EstadoEquipo.Asignado => "Asignado",
+                                            Domain.Enums.EstadoEquipo.EnMantenimiento => "En Mantenimiento",
+                                            Domain.Enums.EstadoEquipo.Dañado => "Dañado",
+                                            Domain.Enums.EstadoEquipo.Baja => "Baja",
+                                            _ => "Desconocido"
+                                        };
+                                    }
+                                    <span class="status-badge @estadoClass" data-estado="@((int)equipo.Estado)">
+                                        @estadoTexto
+                                    </span>
+                                </td>
+                                <td class="actions-cell">
+                                    <button type="button" class="action-btn edit-btn" data-equipo-id="@equipo.Id" title="Editar">
+                                        <span>✏️</span>
+                                    </button>
+                                    <button type="button" class="action-btn delete-btn" data-equipo-id="@equipo.Id" title="Eliminar">
+                                        <span>🗑️</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="no-data">No hay equipos registrados</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Crear/Editar Equipo -->
+<div id="equipoModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTitle">Registrar Nuevo Equipo</h2>
+            <p class="modal-subtitle" id="modalSubtitle">Ingresa la información del equipo de cómputo</p>
+            <button type="button" class="modal-close" id="closeModal">✕</button>
+        </div>
+
+        <div id="modalMessage" class="modal-message" style="display: none;"></div>
+
+        <form id="equipoForm" class="modal-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="equipoId" />
+
+            <div class="form-field">
+                <label for="SalaId">Sala *</label>
+                <select id="SalaId" name="SalaId" required>
+                    <option value="">Seleccionar sala</option>
+                    @if (ViewBag.Salas != null)
+                    {
+                        @foreach (var sala in (IList<Services.Models.SalaModels.SalaModel>)ViewBag.Salas)
+                        {
+                            <option value="@sala.Id">@sala.Numero</option>
+                        }
+                    }
+                </select>
+                <span class="field-error"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="Estado">Estado *</label>
+                <select id="Estado" name="Estado" required>
+                    <option value="0">Disponible</option>
+                    <option value="1">Asignado</option>
+                    <option value="2">En Mantenimiento</option>
+                    <option value="3">Dañado</option>
+                    <option value="4">Baja</option>
+                </select>
+                <span class="field-error"></span>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="btnCancel">Cancelar</button>
+                <button type="submit" class="btn-save" id="btnSave">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let isEditMode = false;
+            let currentEquipoId = null;
+
+            // Abrir modal para crear
+            $('#btnNuevoEquipo').on('click', function () {
+                isEditMode = false;
+                currentEquipoId = null;
+                $('#modalTitle').text('Registrar Nuevo Equipo');
+                $('#modalSubtitle').text('Ingresa la información del equipo de cómputo');
+                $('#equipoForm')[0].reset();
+                $('#equipoId').val('');
+                $('#Estado').val('0');
+                $('#equipoModal').fadeIn(300);
+            });
+
+            // Abrir modal para editar
+            $(document).on('click', '.edit-btn', async function () {
+                const equipoId = $(this).data('equipo-id');
+                isEditMode = true;
+                currentEquipoId = equipoId;
+
+                try {
+                    const response = await fetch(`/Equipo/GetEquipo?id=${equipoId}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        $('#modalTitle').text('Editar Equipo');
+                        $('#modalSubtitle').text('Modifica la información del equipo');
+                        $('#equipoId').val(data.equipo.id);
+                        $('#SalaId').val(data.equipo.salaId);
+                        $('#Estado').val(data.equipo.estado);
+                        $('#equipoModal').fadeIn(300);
+                    } else {
+                        showMessage('Error al cargar el equipo', 'error');
+                    }
+                } catch (error) {
+                    showMessage('Error al cargar el equipo', 'error');
+                }
+            });
+
+            // Cerrar modal
+            $('#closeModal, #btnCancel').on('click', function () {
+                $('#equipoModal').fadeOut(300);
+                $('#equipoForm')[0].reset();
+                $('#modalMessage').hide();
+            });
+
+            // Cerrar modal al hacer clic fuera
+            $('#equipoModal').on('click', function (e) {
+                if ($(e.target).is('#equipoModal')) {
+                    $(this).fadeOut(300);
+                    $('#equipoForm')[0].reset();
+                    $('#modalMessage').hide();
+                }
+            });
+
+            // Enviar formulario
+            $('#equipoForm').on('submit', async function (e) {
+                e.preventDefault();
+
+                const formData = {
+                    SalaId: $('#SalaId').val(),
+                    Estado: parseInt($('#Estado').val()),
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                };
+
+                const url = isEditMode ? `/Equipo/Edit?id=${currentEquipoId}` : '/Equipo/Create';
+                const method = 'POST';
+
+                $('#btnSave').prop('disabled', true).text('Guardando...');
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': formData.__RequestVerificationToken
+                        },
+                        body: new URLSearchParams(formData).toString()
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        $('#equipoModal').fadeOut(300);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showMessage(data.message, 'error', '#modalMessage');
+                    }
+                } catch (error) {
+                    showMessage('Ocurrió un error al guardar el equipo', 'error', '#modalMessage');
+                } finally {
+                    $('#btnSave').prop('disabled', false).text('Guardar');
+                }
+            });
+
+            // Eliminar equipo
+            $(document).on('click', '.delete-btn', async function () {
+                const equipoId = $(this).data('equipo-id');
+                const equipoCodigo = $(this).closest('tr').find('.equipo-codigo').text();
+
+                if (!confirm(`¿Estás seguro de que deseas eliminar el equipo "${equipoCodigo}"?`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/Equipo/Delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        body: `id=${equipoId}&__RequestVerificationToken=${$('input[name="__RequestVerificationToken"]').val()}`
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        $(`tr[data-equipo-id="${equipoId}"]`).fadeOut(300, function () {
+                            $(this).remove();
+                            if ($('#equiposTableBody tr').length === 0) {
+                                $('#equiposTableBody').html('<tr><td colspan="4" class="no-data">No hay equipos registrados</td></tr>');
+                            }
+                        });
+                    } else {
+                        showMessage(data.message, 'error');
+                    }
+                } catch (error) {
+                    showMessage('Ocurrió un error al eliminar el equipo', 'error');
+                }
+            });
+
+            // Búsqueda
+            $('#searchInput').on('keyup', function () {
+                const searchTerm = $(this).val().toLowerCase();
+                filterTable(searchTerm, $('#filterSala').val(), $('#filterEstado').val());
+            });
+
+            // Filtro por sala
+            $('#filterSala').on('change', function () {
+                filterTable($('#searchInput').val().toLowerCase(), $(this).val(), $('#filterEstado').val());
+            });
+
+            // Filtro por estado
+            $('#filterEstado').on('change', function () {
+                filterTable($('#searchInput').val().toLowerCase(), $('#filterSala').val(), $(this).val());
+            });
+
+            function filterTable(searchTerm, salaFilter, estadoFilter) {
+                $('#equiposTableBody tr').each(function () {
+                    const codigo = $(this).find('.equipo-codigo').text().toLowerCase();
+                    const sala = $(this).find('td').eq(1).text().toLowerCase();
+                    const estadoText = $(this).find('.status-badge').text().toLowerCase();
+                    const estadoValue = $(this).find('.status-badge').data('estado') || '';
+
+                    const matchesSearch = codigo.includes(searchTerm) || sala.includes(searchTerm);
+                    const matchesSala = !salaFilter || $(this).data('sala-id') === salaFilter;
+                    const matchesEstado = !estadoFilter || estadoValue === estadoFilter;
+
+                    $(this).toggle(matchesSearch && matchesSala && matchesEstado);
+                });
+            }
+
+            function showMessage(message, type, container = '#messageContainer') {
+                const $container = $(container);
+                $container.removeClass('message-success message-error')
+                    .addClass(type === 'success' ? 'message-success' : 'message-error')
+                    .text(message)
+                    .fadeIn(300);
+
+                if (type === 'success') {
+                    setTimeout(() => {
+                        $container.fadeOut(300);
+                    }, 3000);
+                }
+            }
+        });
+    </script>
+}
+

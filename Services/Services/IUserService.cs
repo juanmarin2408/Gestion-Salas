@@ -12,6 +12,8 @@ namespace Services
         Task<UserModel?> GetUser(Guid id);
         Task<Usuario?> LoginAsync(string email, string password);
         Task Register(AddUserModel model);
+        Task Update(Guid id, AddUserModel model);
+        Task Delete(Guid id);
         Task UpdateLastAccess(Guid userId);
         Task<bool> EmailExistsAsync(string email);
         Task ChangePasswordAsync(string email, string newPassword);

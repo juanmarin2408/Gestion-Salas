@@ -63,5 +63,25 @@ namespace Infrastructure.Repositories
                 throw;
             }
         }
+
+        public async Task Delete(Guid id)
+        {
+            try
+            {
+                await Begin();
+                var usuario = await context.Usuarios.FindAsync(id);
+                if (usuario != null)
+                {
+                    context.Usuarios.Remove(usuario);
+                    await Save();
+                }
+                await Commit();
+            }
+            catch (Exception)
+            {
+                await RollBack();
+                throw;
+            }
+        }
     }
 }

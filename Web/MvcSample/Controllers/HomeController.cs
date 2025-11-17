@@ -74,6 +74,7 @@ namespace MvcSample.Controllers
                 {
                     Domain.Enums.RolUsuario.Administrador => RedirectToAction("Dashboard", "Admin"),
                     Domain.Enums.RolUsuario.Usuario => RedirectToAction("Index", "User"),
+                    Domain.Enums.RolUsuario.Coordinador => RedirectToAction("Index", "Coordinador"),
                     _ => RedirectToAction("Index", "Home")
                 };
             }

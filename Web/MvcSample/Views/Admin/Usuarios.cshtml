@@ -1,0 +1,444 @@
+@model IList<Services.Models.UserModels.UserModel>
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
+    ViewBag.HideFooter = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/salas.css" asp-append-version="true" />
+}
+
+<div class="admin-page">
+    <!-- HEADER -->
+    <header class="admin-header">
+        <div class="admin-header-left">
+            <div class="admin-logo-icon">
+                <span class="material-icon">▤</span>
+            </div>
+            <div class="admin-logo-text">
+                <div class="admin-app-name">Sistema de Salas</div>
+                <div class="admin-app-subtitle">Universidad Santiago de Cali</div>
+            </div>
+        </div>
+
+        <div class="admin-header-right">
+            <form asp-controller="Home" asp-action="Logout" method="post" style="display: inline;">
+                <button type="submit" class="admin-logout" style="border: none; background: none; cursor: pointer;">
+                    <span class="admin-logout-icon">⟲</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+
+            <div class="admin-user-card">
+                <div class="admin-user-avatar">@(Context.Session.GetString("Nombre")?.Substring(0, 1).ToUpper() ?? "A")@(Context.Session.GetString("Apellido")?.Substring(0, 1).ToUpper() ?? "U")</div>
+                <div class="admin-user-text">
+                    <div class="admin-user-name">@(Context.Session.GetString("Nombre") ?? "Admin Usuario")</div>
+                    <div class="admin-user-role">Administrador</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="admin-tabs">
+        <a asp-controller="Admin" asp-action="Dashboard" class="admin-tab">
+            <span class="admin-tab-icon">📊</span>
+            <span>Resumen</span>
+        </a>
+        <a asp-controller="Sala" asp-action="Index" class="admin-tab">
+            <span class="admin-tab-icon">🏢</span>
+            <span>Salas</span>
+        </a>
+        <a asp-controller="Equipo" asp-action="Index" class="admin-tab">
+            <span class="admin-tab-icon">💻</span>
+            <span>Equipos</span>
+        </a>
+        <a asp-controller="Usuario" asp-action="Index" class="admin-tab active">
+            <span class="admin-tab-icon">👥</span>
+            <span>Usuarios</span>
+        </a>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="admin-main">
+        <div class="salas-header">
+            <h1 class="salas-title">Gestión de Usuarios</h1>
+            <div class="salas-actions">
+                <div class="salas-search-filter">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Buscar por nombre o correo..." />
+                    </div>
+                    <select id="filterRol" class="filter-select">
+                        <option value="">Todos los roles</option>
+                        <option value="0">Administrador</option>
+                        <option value="1">Usuario</option>
+                        <option value="2">Coordinador</option>
+                    </select>
+                    <select id="filterEstado" class="filter-select">
+                        <option value="">Todos los estados</option>
+                        <option value="true">Activos</option>
+                        <option value="false">Inactivos</option>
+                    </select>
+                </div>
+                <button type="button" class="btn-nueva-sala" id="btnNuevoUsuario">
+                    <span>+</span>
+                    <span>Nuevo Usuario</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mensajes -->
+        <div id="messageContainer" style="display: none;"></div>
+
+        <!-- Tabla de Usuarios -->
+        <div class="salas-table-container">
+            <table class="salas-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Fecha Registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="usuariosTableBody">
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var usuario in Model)
+                        {
+                            <tr data-usuario-id="@usuario.Id" data-rol="@((int)usuario.Rol)" data-activo="@usuario.Activo.ToString().ToLower()">
+                                <td class="usuario-nombre">@usuario.Nombre @usuario.Apellido</td>
+                                <td>@usuario.Email</td>
+                                <td>
+                                    @{
+                                        var rolClass = usuario.Rol switch
+                                        {
+                                            Domain.Enums.RolUsuario.Administrador => "status-active",
+                                            Domain.Enums.RolUsuario.Usuario => "status-inactive",
+                                            Domain.Enums.RolUsuario.Coordinador => "status-maintenance",
+                                            _ => ""
+                                        };
+                                        var rolTexto = usuario.Rol switch
+                                        {
+                                            Domain.Enums.RolUsuario.Administrador => "Administrador",
+                                            Domain.Enums.RolUsuario.Usuario => "Usuario",
+                                            Domain.Enums.RolUsuario.Coordinador => "Coordinador",
+                                            _ => "Desconocido"
+                                        };
+                                    }
+                                    <span class="status-badge @rolClass">@rolTexto</span>
+                                </td>
+                                <td>
+                                    <span class="status-badge @(usuario.Activo ? "status-active" : "status-inactive")">
+                                        @(usuario.Activo ? "Activo" : "Inactivo")
+                                    </span>
+                                </td>
+                                <td>@usuario.FechaCreacion.ToString("yyyy-MM-dd")</td>
+                                <td class="actions-cell">
+                                    <button type="button" class="action-btn edit-btn" data-usuario-id="@usuario.Id" title="Editar">
+                                        <span>✏️</span>
+                                    </button>
+                                    <button type="button" class="action-btn delete-btn" data-usuario-id="@usuario.Id" title="Eliminar">
+                                        <span>🗑️</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="no-data">No hay usuarios registrados</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Crear/Editar Usuario -->
+<div id="usuarioModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTitle">Crear Nuevo Usuario</h2>
+            <p class="modal-subtitle" id="modalSubtitle">Ingresa la información del usuario</p>
+            <button type="button" class="modal-close" id="closeModal">✕</button>
+        </div>
+
+        <div id="modalMessage" class="modal-message" style="display: none;"></div>
+
+        <form id="usuarioForm" class="modal-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="usuarioId" />
+
+            <div class="form-field">
+                <label for="Nombre">Nombre Completo *</label>
+                <input type="text" id="Nombre" name="Nombre" required maxlength="100" placeholder="Ej: Juan Pérez" />
+                <span class="field-error"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="Apellido">Apellido</label>
+                <input type="text" id="Apellido" name="Apellido" maxlength="100" placeholder="Ej: Pérez" />
+                <span class="field-error"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="Documento">Documento *</label>
+                <input type="text" id="Documento" name="Documento" required maxlength="50" placeholder="Ej: 1234567890" />
+                <span class="field-error"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="Email">Correo Electrónico *</label>
+                <input type="email" id="Email" name="Email" required maxlength="256" placeholder="Ej: juan.perez@universidad.edu" />
+                <span class="field-error"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="Password">Contraseña *</label>
+                <input type="password" id="Password" name="Password" required minlength="8" placeholder="Mínimo 8 caracteres" />
+                <small style="color: #6b7280; font-size: 12px; margin-top: 4px; display: block;">
+                    Mínimo 8 caracteres, una mayúscula, un número y un carácter especial
+                </small>
+                <span class="field-error"></span>
+            </div>
+
+            <div class="form-field" id="confirmPasswordField">
+                <label for="ConfirmPassword">Confirmar Contraseña *</label>
+                <input type="password" id="ConfirmPassword" name="ConfirmPassword" required minlength="8" placeholder="Confirma la contraseña" />
+                <span class="field-error"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="Rol">Rol *</label>
+                <select id="Rol" name="Rol" required>
+                    <option value="1">Usuario</option>
+                    <option value="0">Administrador</option>
+                    <option value="2">Coordinador</option>
+                </select>
+                <span class="field-error"></span>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="btnCancel">Cancelar</button>
+                <button type="submit" class="btn-save" id="btnSave">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let isEditMode = false;
+            let currentUsuarioId = null;
+
+            // Abrir modal para crear
+            $('#btnNuevoUsuario').on('click', function () {
+                isEditMode = false;
+                currentUsuarioId = null;
+                $('#modalTitle').text('Crear Nuevo Usuario');
+                $('#modalSubtitle').text('Ingresa la información del usuario');
+                $('#usuarioForm')[0].reset();
+                $('#usuarioId').val('');
+                $('#Rol').val('1');
+                $('#Password').prop('required', true);
+                $('#ConfirmPassword').prop('required', true);
+                $('#confirmPasswordField').show();
+                $('#usuarioModal').fadeIn(300);
+            });
+
+            // Abrir modal para editar
+            $(document).on('click', '.edit-btn', async function () {
+                const usuarioId = $(this).data('usuario-id');
+                isEditMode = true;
+                currentUsuarioId = usuarioId;
+
+                try {
+                    const response = await fetch(`/Usuario/GetUsuario?id=${usuarioId}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        $('#modalTitle').text('Editar Usuario');
+                        $('#modalSubtitle').text('Modifica la información del usuario');
+                        $('#usuarioId').val(data.usuario.id);
+                        $('#Nombre').val(data.usuario.nombre);
+                        $('#Apellido').val(data.usuario.apellido || '');
+                        $('#Documento').val(data.usuario.documento);
+                        $('#Email').val(data.usuario.email);
+                        $('#Rol').val(data.usuario.rol);
+                        $('#Password').prop('required', false);
+                        $('#ConfirmPassword').prop('required', false);
+                        $('#confirmPasswordField').hide();
+                        $('#usuarioModal').fadeIn(300);
+                    } else {
+                        showMessage('Error al cargar el usuario', 'error');
+                    }
+                } catch (error) {
+                    showMessage('Error al cargar el usuario', 'error');
+                }
+            });
+
+            // Cerrar modal
+            $('#closeModal, #btnCancel').on('click', function () {
+                $('#usuarioModal').fadeOut(300);
+                $('#usuarioForm')[0].reset();
+                $('#modalMessage').hide();
+                $('#confirmPasswordField').show();
+            });
+
+            // Cerrar modal al hacer clic fuera
+            $('#usuarioModal').on('click', function (e) {
+                if ($(e.target).is('#usuarioModal')) {
+                    $(this).fadeOut(300);
+                    $('#usuarioForm')[0].reset();
+                    $('#modalMessage').hide();
+                    $('#confirmPasswordField').show();
+                }
+            });
+
+            // Enviar formulario
+            $('#usuarioForm').on('submit', async function (e) {
+                e.preventDefault();
+
+                // Validar contraseñas si están presentes
+                if ($('#Password').val() && $('#Password').val() !== $('#ConfirmPassword').val()) {
+                    showMessage('Las contraseñas no coinciden', 'error', '#modalMessage');
+                    return;
+                }
+
+                const formData = {
+                    Nombre: $('#Nombre').val(),
+                    Apellido: $('#Apellido').val() || '',
+                    Documento: $('#Documento').val(),
+                    Email: $('#Email').val(),
+                    Password: $('#Password').val() || '',
+                    ConfirmPassword: $('#ConfirmPassword').val() || '',
+                    Rol: parseInt($('#Rol').val()),
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                };
+
+                const url = isEditMode ? `/Usuario/Edit?id=${currentUsuarioId}` : '/Usuario/Create';
+                const method = 'POST';
+
+                $('#btnSave').prop('disabled', true).text('Guardando...');
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': formData.__RequestVerificationToken
+                        },
+                        body: new URLSearchParams(formData).toString()
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        $('#usuarioModal').fadeOut(300);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showMessage(data.message, 'error', '#modalMessage');
+                    }
+                } catch (error) {
+                    showMessage('Ocurrió un error al guardar el usuario', 'error', '#modalMessage');
+                } finally {
+                    $('#btnSave').prop('disabled', false).text('Guardar');
+                }
+            });
+
+            // Eliminar usuario
+            $(document).on('click', '.delete-btn', async function () {
+                const usuarioId = $(this).data('usuario-id');
+                const usuarioNombre = $(this).closest('tr').find('.usuario-nombre').text();
+
+                if (!confirm(`¿Estás seguro de que deseas eliminar el usuario "${usuarioNombre}"?`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/Usuario/Delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        body: `id=${usuarioId}&__RequestVerificationToken=${$('input[name="__RequestVerificationToken"]').val()}`
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        $(`tr[data-usuario-id="${usuarioId}"]`).fadeOut(300, function () {
+                            $(this).remove();
+                            if ($('#usuariosTableBody tr').length === 0) {
+                                $('#usuariosTableBody').html('<tr><td colspan="6" class="no-data">No hay usuarios registrados</td></tr>');
+                            }
+                        });
+                    } else {
+                        showMessage(data.message, 'error');
+                    }
+                } catch (error) {
+                    showMessage('Ocurrió un error al eliminar el usuario', 'error');
+                }
+            });
+
+            // Búsqueda
+            $('#searchInput').on('keyup', function () {
+                const searchTerm = $(this).val().toLowerCase();
+                filterTable(searchTerm, $('#filterRol').val(), $('#filterEstado').val());
+            });
+
+            // Filtro por rol
+            $('#filterRol').on('change', function () {
+                filterTable($('#searchInput').val().toLowerCase(), $(this).val(), $('#filterEstado').val());
+            });
+
+            // Filtro por estado
+            $('#filterEstado').on('change', function () {
+                filterTable($('#searchInput').val().toLowerCase(), $('#filterRol').val(), $(this).val());
+            });
+
+            function filterTable(searchTerm, rolFilter, estadoFilter) {
+                $('#usuariosTableBody tr').each(function () {
+                    const nombre = $(this).find('.usuario-nombre').text().toLowerCase();
+                    const correo = $(this).find('td').eq(1).text().toLowerCase();
+                    const rol = $(this).data('rol')?.toString() || '';
+                    const activo = $(this).data('activo')?.toString() || '';
+
+                    const matchesSearch = nombre.includes(searchTerm) || correo.includes(searchTerm);
+                    const matchesRol = !rolFilter || rol === rolFilter;
+                    const matchesEstado = !estadoFilter || activo === estadoFilter;
+
+                    $(this).toggle(matchesSearch && matchesRol && matchesEstado);
+                });
+            }
+
+            function showMessage(message, type, container = '#messageContainer') {
+                const $container = $(container);
+                $container.removeClass('message-success message-error')
+                    .addClass(type === 'success' ? 'message-success' : 'message-error')
+                    .text(message)
+                    .fadeIn(300);
+
+                if (type === 'success') {
+                    setTimeout(() => {
+                        $container.fadeOut(300);
+                    }, 3000);
+                }
+            }
+        });
+    </script>
+}
+

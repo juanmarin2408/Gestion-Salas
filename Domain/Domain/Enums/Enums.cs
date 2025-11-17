@@ -16,7 +16,7 @@ namespace Domain.Enums
     {
         Administrador = 0,
         Usuario = 1,
-        Invitado = 2
+        Coordinador = 2
     }
 
     public enum EstadoEquipo

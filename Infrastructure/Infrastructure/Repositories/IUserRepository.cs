@@ -16,5 +16,6 @@ namespace Infrastructure.Repositories
 
         Task Save(Usuario usuario);
         Task Update(Usuario usuario);
+        Task Delete(Guid id);
     }
 }
