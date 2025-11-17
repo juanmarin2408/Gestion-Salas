@@ -22,32 +22,33 @@
         </div>
 
         <div class="admin-header-right">
-            <a asp-controller="Home" asp-action="Index" class="admin-logout">
-                <span class="admin-logout-icon">⟲</span>
-                <span>Cerrar Sesión</span>
-            </a>
+            <form asp-controller="Home" asp-action="Logout" method="post" style="display: inline;">
+                <button type="submit" class="admin-logout" style="border: none; background: none; cursor: pointer; padding: 0;">
+                    <span class="admin-logout-icon">⟲</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
 
             <div class="admin-user-card">
-                <div class="admin-user-avatar">AU</div>
+                <div class="admin-user-avatar">@(Context.Session.GetString("Nombre")?.Substring(0, 1).ToUpper() ?? "A")@(Context.Session.GetString("Apellido")?.Substring(0, 1).ToUpper() ?? "U")</div>
                 <div class="admin-user-text">
-                    <div class="admin-user-name">Admin Usuario</div>
+                    <div class="admin-user-name">@(Context.Session.GetString("Nombre") ?? "Admin Usuario")</div>
                     <div class="admin-user-role">Administrador</div>
                 </div>
-                <span class="admin-user-arrow">›</span>
             </div>
         </div>
     </header>
 
     <!-- TABS -->
     <div class="admin-tabs">
-        <button class="admin-tab active">
+        <a asp-controller="Admin" asp-action="Dashboard" class="admin-tab active">
             <span class="admin-tab-icon">📊</span>
             <span>Resumen</span>
-        </button>
-        <button class="admin-tab">
+        </a>
+        <a asp-controller="Sala" asp-action="Index" class="admin-tab">
             <span class="admin-tab-icon">🏢</span>
             <span>Salas</span>
-        </button>
+        </a>
         <button class="admin-tab">
             <span class="admin-tab-icon">💻</span>
             <span>Equipos</span>
@@ -68,10 +69,10 @@
                     <span class="admin-kpi-title">Total de Salas</span>
                     <div class="admin-kpi-icon">🏢</div>
                 </div>
-                <div class="admin-kpi-value">12</div>
+                <div class="admin-kpi-value">@(ViewBag.TotalSalas ?? 0)</div>
                 <div class="admin-kpi-footer">
-                    <span class="admin-kpi-trend up">▲ +2</span>
-                    <span class="admin-kpi-sub">este mes</span>
+                    <span class="admin-kpi-trend up">▲ @(ViewBag.SalasActivas ?? 0)</span>
+                    <span class="admin-kpi-sub">activas</span>
                 </div>
             </article>
 
@@ -80,10 +81,10 @@
                     <span class="admin-kpi-title">Equipos Registrados</span>
                     <div class="admin-kpi-icon">💻</div>
                 </div>
-                <div class="admin-kpi-value">245</div>
+                <div class="admin-kpi-value">@(ViewBag.TotalEquipos ?? 0)</div>
                 <div class="admin-kpi-footer">
-                    <span class="admin-kpi-trend up">▲ +15</span>
-                    <span class="admin-kpi-sub">este mes</span>
+                    <span class="admin-kpi-trend up">▲</span>
+                    <span class="admin-kpi-sub">total registrados</span>
                 </div>
             </article>
 
@@ -92,22 +93,22 @@
                     <span class="admin-kpi-title">Usuarios Activos</span>
                     <div class="admin-kpi-icon">👥</div>
                 </div>
-                <div class="admin-kpi-value">156</div>
+                <div class="admin-kpi-value">@(ViewBag.TotalUsuarios ?? 0)</div>
                 <div class="admin-kpi-footer">
-                    <span class="admin-kpi-trend up">▲ +8</span>
-                    <span class="admin-kpi-sub">esta semana</span>
+                    <span class="admin-kpi-trend up">▲</span>
+                    <span class="admin-kpi-sub">total usuarios</span>
                 </div>
             </article>
 
             <article class="admin-kpi-card kpi-orange">
                 <div class="admin-kpi-header">
-                    <span class="admin-kpi-title">Reportes Pendientes</span>
+                    <span class="admin-kpi-title">Salas Inactivas</span>
                     <div class="admin-kpi-icon">⚠</div>
                 </div>
-                <div class="admin-kpi-value">7</div>
+                <div class="admin-kpi-value">@((ViewBag.TotalSalas ?? 0) - (ViewBag.SalasActivas ?? 0))</div>
                 <div class="admin-kpi-footer">
-                    <span class="admin-kpi-trend down">▼ -3</span>
-                    <span class="admin-kpi-sub">desde ayer</span>
+                    <span class="admin-kpi-trend">─</span>
+                    <span class="admin-kpi-sub">requieren atención</span>
                 </div>
             </article>
         </section>
@@ -123,61 +124,42 @@
                 </header>
 
                 <div class="admin-panel-body">
-                    <div class="room-occupancy-item">
-                        <div class="room-occupancy-text">
-                            <div class="room-name">Lab-A1</div>
-                            <div class="room-sub">Capacidad: 30 equipos</div>
+                    @if (ViewBag.Salas != null)
+                    {
+                        var salas = (IList<Services.Models.SalaModels.SalaModel>)ViewBag.Salas;
+                        @foreach (var sala in salas.Take(4))
+                        {
+                            var porcentaje = sala.Capacidad > 0 ? (sala.TotalEquipos * 100) / sala.Capacidad : 0;
+                            var percentClass = porcentaje >= 80 ? "high" : porcentaje >= 50 ? "medium" : "low";
+                            var fillClass = porcentaje >= 80 ? "fill-orange" : porcentaje >= 50 ? "fill-yellow" : "fill-green";
+                            
+                            <div class="room-occupancy-item">
+                                <div class="room-occupancy-text">
+                                    <div class="room-name">@sala.Numero</div>
+                                    <div class="room-sub">Capacidad: @sala.Capacidad equipos</div>
+                                </div>
+                                <div class="room-occupancy-right">
+                                    <div class="room-percent @percentClass">@porcentaje%</div>
+                                    <div class="room-detail">@sala.TotalEquipos/@sala.Capacidad</div>
+                                </div>
+                                <div class="room-bar">
+                                    <div class="room-bar-fill @fillClass" style="width: @porcentaje%;"></div>
+                                </div>
+                            </div>
+                        }
+                        @if (salas.Count == 0)
+                        {
+                            <div style="text-align: center; padding: 20px; color: #9ca3af;">
+                                No hay salas registradas
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div style="text-align: center; padding: 20px; color: #9ca3af;">
+                            No hay salas registradas
                         </div>
-                        <div class="room-occupancy-right">
-                            <div class="room-percent high">83%</div>
-                            <div class="room-detail">25/30</div>
-                        </div>
-                        <div class="room-bar">
-                            <div class="room-bar-fill fill-orange" style="width: 83%;"></div>
-                        </div>
-                    </div>
-
-                    <div class="room-occupancy-item">
-                        <div class="room-occupancy-text">
-                            <div class="room-name">Lab-A2</div>
-                            <div class="room-sub">Capacidad: 30 equipos</div>
-                        </div>
-                        <div class="room-occupancy-right">
-                            <div class="room-percent medium">60%</div>
-                            <div class="room-detail">18/30</div>
-                        </div>
-                        <div class="room-bar">
-                            <div class="room-bar-fill fill-yellow" style="width: 60%;"></div>
-                        </div>
-                    </div>
-
-                    <div class="room-occupancy-item">
-                        <div class="room-occupancy-text">
-                            <div class="room-name">Lab-B1</div>
-                            <div class="room-sub">Capacidad: 25 equipos</div>
-                        </div>
-                        <div class="room-occupancy-right">
-                            <div class="room-percent high">88%</div>
-                            <div class="room-detail">22/25</div>
-                        </div>
-                        <div class="room-bar">
-                            <div class="room-bar-fill fill-pink" style="width: 88%;"></div>
-                        </div>
-                    </div>
-
-                    <div class="room-occupancy-item">
-                        <div class="room-occupancy-text">
-                            <div class="room-name">Lab-B2</div>
-                            <div class="room-sub">Capacidad: 25 equipos</div>
-                        </div>
-                        <div class="room-occupancy-right">
-                            <div class="room-percent low">40%</div>
-                            <div class="room-detail">10/25</div>
-                        </div>
-                        <div class="room-bar">
-                            <div class="room-bar-fill fill-green" style="width: 40%;"></div>
-                        </div>
-                    </div>
+                    }
                 </div>
             </article>
 
@@ -189,49 +171,70 @@
                 </header>
 
                 <div class="admin-panel-body panel-body-list">
-                    <div class="status-row status-available">
-                        <div class="status-left">
-                            <span class="status-dot"></span>
-                            <span class="status-label">Disponibles</span>
-                        </div>
-                        <div class="status-right">
-                            <span class="status-count">156</span>
-                            <span class="status-percent">64%</span>
-                        </div>
-                    </div>
+                    @if (ViewBag.Equipos != null)
+                    {
+                        var equipos = (IList<Services.Models.EquipoModels.EquipoModel>)ViewBag.Equipos;
+                        var totalEquipos = equipos.Count;
+                        var disponibles = equipos.Count(e => e.Estado == Domain.Enums.EstadoEquipo.Disponible);
+                        var asignados = equipos.Count(e => e.Estado == Domain.Enums.EstadoEquipo.Asignado);
+                        var enMantenimiento = equipos.Count(e => e.Estado == Domain.Enums.EstadoEquipo.EnMantenimiento);
+                        var dadosBaja = equipos.Count(e => e.Estado == Domain.Enums.EstadoEquipo.Baja);
 
-                    <div class="status-row status-assigned">
-                        <div class="status-left">
-                            <span class="status-dot"></span>
-                            <span class="status-label">Asignados</span>
-                        </div>
-                        <div class="status-right">
-                            <span class="status-count">72</span>
-                            <span class="status-percent">29%</span>
-                        </div>
-                    </div>
+                        var pctDisponibles = totalEquipos > 0 ? (disponibles * 100) / totalEquipos : 0;
+                        var pctAsignados = totalEquipos > 0 ? (asignados * 100) / totalEquipos : 0;
+                        var pctMantenimiento = totalEquipos > 0 ? (enMantenimiento * 100) / totalEquipos : 0;
+                        var pctBaja = totalEquipos > 0 ? (dadosBaja * 100) / totalEquipos : 0;
 
-                    <div class="status-row status-blocked">
-                        <div class="status-left">
-                            <span class="status-dot"></span>
-                            <span class="status-label">Bloqueados</span>
+                        <div class="status-row status-available">
+                            <div class="status-left">
+                                <span class="status-dot"></span>
+                                <span class="status-label">Disponibles</span>
+                            </div>
+                            <div class="status-right">
+                                <span class="status-count">@disponibles</span>
+                                <span class="status-percent">@pctDisponibles%</span>
+                            </div>
                         </div>
-                        <div class="status-right">
-                            <span class="status-count">12</span>
-                            <span class="status-percent">5%</span>
-                        </div>
-                    </div>
 
-                    <div class="status-row status-retired">
-                        <div class="status-left">
-                            <span class="status-dot"></span>
-                            <span class="status-label">Dados de Baja</span>
+                        <div class="status-row status-assigned">
+                            <div class="status-left">
+                                <span class="status-dot"></span>
+                                <span class="status-label">Asignados</span>
+                            </div>
+                            <div class="status-right">
+                                <span class="status-count">@asignados</span>
+                                <span class="status-percent">@pctAsignados%</span>
+                            </div>
                         </div>
-                        <div class="status-right">
-                            <span class="status-count">5</span>
-                            <span class="status-percent">2%</span>
+
+                        <div class="status-row status-blocked">
+                            <div class="status-left">
+                                <span class="status-dot"></span>
+                                <span class="status-label">En Mantenimiento</span>
+                            </div>
+                            <div class="status-right">
+                                <span class="status-count">@enMantenimiento</span>
+                                <span class="status-percent">@pctMantenimiento%</span>
+                            </div>
                         </div>
-                    </div>
+
+                        <div class="status-row status-retired">
+                            <div class="status-left">
+                                <span class="status-dot"></span>
+                                <span class="status-label">Dados de Baja</span>
+                            </div>
+                            <div class="status-right">
+                                <span class="status-count">@dadosBaja</span>
+                                <span class="status-percent">@pctBaja%</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="text-align: center; padding: 20px; color: #9ca3af;">
+                            No hay equipos registrados
+                        </div>
+                    }
                 </div>
             </article>
         </section>

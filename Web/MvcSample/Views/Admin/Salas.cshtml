@@ -1,0 +1,376 @@
+@model IList<Services.Models.SalaModels.SalaModel>
+@{
+    ViewData["Title"] = "Gestión de Salas";
+    ViewBag.HideFooter = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/salas.css" asp-append-version="true" />
+}
+
+<div class="admin-page">
+    <!-- HEADER -->
+    <header class="admin-header">
+        <div class="admin-header-left">
+            <div class="admin-logo-icon">
+                <span class="material-icon">▤</span>
+            </div>
+            <div class="admin-logo-text">
+                <div class="admin-app-name">Sistema de Salas</div>
+                <div class="admin-app-subtitle">Universidad Santiago de Cali</div>
+            </div>
+        </div>
+
+        <div class="admin-header-right">
+            <form asp-controller="Home" asp-action="Logout" method="post" style="display: inline;">
+                <button type="submit" class="admin-logout" style="border: none; background: none; cursor: pointer;">
+                    <span class="admin-logout-icon">⟲</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+
+            <div class="admin-user-card">
+                <div class="admin-user-avatar">@(Context.Session.GetString("Nombre")?.Substring(0, 1).ToUpper() ?? "A")@(Context.Session.GetString("Apellido")?.Substring(0, 1).ToUpper() ?? "U")</div>
+                <div class="admin-user-text">
+                    <div class="admin-user-name">@(Context.Session.GetString("Nombre") ?? "Admin Usuario")</div>
+                    <div class="admin-user-role">Administrador</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="admin-tabs">
+        <a asp-controller="Admin" asp-action="Dashboard" class="admin-tab">
+            <span class="admin-tab-icon">📊</span>
+            <span>Resumen</span>
+        </a>
+        <a asp-controller="Sala" asp-action="Index" class="admin-tab active">
+            <span class="admin-tab-icon">🏢</span>
+            <span>Salas</span>
+        </a>
+        <button class="admin-tab">
+            <span class="admin-tab-icon">💻</span>
+            <span>Equipos</span>
+        </button>
+        <button class="admin-tab">
+            <span class="admin-tab-icon">👥</span>
+            <span>Usuarios</span>
+        </button>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="admin-main">
+        <div class="salas-header">
+            <h1 class="salas-title">Gestión de Salas</h1>
+            <div class="salas-actions">
+                <div class="salas-search-filter">
+                    <div class="search-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Buscar por número o ubicación..." />
+                    </div>
+                    <select id="filterEstado" class="filter-select">
+                        <option value="">Todos los estados</option>
+                        <option value="1">Activas</option>
+                        <option value="0">Inactivas</option>
+                    </select>
+                </div>
+                <button type="button" class="btn-nueva-sala" id="btnNuevaSala">
+                    <span>+</span>
+                    <span>Nueva Sala</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mensajes -->
+        <div id="messageContainer" style="display: none;"></div>
+
+        <!-- Tabla de Salas -->
+        <div class="salas-table-container">
+            <table class="salas-table">
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Capacidad</th>
+                        <th>Ubicación</th>
+                        <th>Equipos</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="salasTableBody">
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var sala in Model)
+                        {
+                            <tr data-sala-id="@sala.Id">
+                                <td class="sala-nombre">@sala.Numero</td>
+                                <td>@sala.Capacidad</td>
+                                <td>
+                                    <span class="location-icon">📍</span>
+                                    @sala.Ubicacion
+                                </td>
+                                <td>@sala.TotalEquipos</td>
+                                <td>
+                                    <span class="status-badge @(sala.Estado == Domain.Enums.EstadoSala.Activa ? "status-active" : "status-inactive")">
+                                        @(sala.Estado == Domain.Enums.EstadoSala.Activa ? "Activa" : "Inactiva")
+                                    </span>
+                                </td>
+                                <td class="actions-cell">
+                                    <button type="button" class="action-btn edit-btn" data-sala-id="@sala.Id" title="Editar">
+                                        <span>✏️</span>
+                                    </button>
+                                    <button type="button" class="action-btn delete-btn" data-sala-id="@sala.Id" title="Eliminar">
+                                        <span>🗑️</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="no-data">No hay salas registradas</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Crear/Editar Sala -->
+<div id="salaModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTitle">Crear Nueva Sala</h2>
+            <p class="modal-subtitle" id="modalSubtitle">Ingresa la información de la nueva sala de sistemas</p>
+            <button type="button" class="modal-close" id="closeModal">✕</button>
+        </div>
+
+        <div id="modalMessage" class="modal-message" style="display: none;"></div>
+
+        <form id="salaForm" class="modal-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="salaId" />
+
+            <div class="form-field">
+                <label for="Numero">Número *</label>
+                <input type="text" id="Numero" name="Numero" required maxlength="50" placeholder="Ej: 2408" />
+                <span class="field-error"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="Capacidad">Capacidad *</label>
+                <input type="number" id="Capacidad" name="Capacidad" required min="1" placeholder="Ej: 23" />
+                <span class="field-error"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="Ubicacion">Ubicación *</label>
+                <input type="text" id="Ubicacion" name="Ubicacion" required maxlength="200" placeholder="Ej: bloque 2 piso 4" />
+                <span class="field-error"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="Estado">Estado *</label>
+                <select id="Estado" name="Estado" required>
+                    <option value="1">Activa</option>
+                    <option value="0">Inactiva</option>
+                </select>
+                <span class="field-error"></span>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="btnCancel">Cancelar</button>
+                <button type="submit" class="btn-save" id="btnSave">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let isEditMode = false;
+            let currentSalaId = null;
+
+            // Abrir modal para crear
+            $('#btnNuevaSala').on('click', function () {
+                isEditMode = false;
+                currentSalaId = null;
+                $('#modalTitle').text('Crear Nueva Sala');
+                $('#modalSubtitle').text('Ingresa la información de la nueva sala de sistemas');
+                $('#salaForm')[0].reset();
+                $('#salaId').val('');
+                $('#Estado').val('1');
+                $('#salaModal').fadeIn(300);
+            });
+
+            // Abrir modal para editar
+            $(document).on('click', '.edit-btn', async function () {
+                const salaId = $(this).data('sala-id');
+                isEditMode = true;
+                currentSalaId = salaId;
+
+                try {
+                    const response = await fetch(`/Sala/GetSala?id=${salaId}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        $('#modalTitle').text('Editar Sala');
+                        $('#modalSubtitle').text('Modifica la información de la sala');
+                        $('#salaId').val(data.sala.id);
+                        $('#Numero').val(data.sala.numero);
+                        $('#Capacidad').val(data.sala.capacidad);
+                        $('#Ubicacion').val(data.sala.ubicacion);
+                        $('#Estado').val(data.sala.estado);
+                        $('#salaModal').fadeIn(300);
+                    } else {
+                        showMessage('Error al cargar la sala', 'error');
+                    }
+                } catch (error) {
+                    showMessage('Error al cargar la sala', 'error');
+                }
+            });
+
+            // Cerrar modal
+            $('#closeModal, #btnCancel').on('click', function () {
+                $('#salaModal').fadeOut(300);
+                $('#salaForm')[0].reset();
+                $('#modalMessage').hide();
+            });
+
+            // Cerrar modal al hacer clic fuera
+            $('#salaModal').on('click', function (e) {
+                if ($(e.target).is('#salaModal')) {
+                    $(this).fadeOut(300);
+                    $('#salaForm')[0].reset();
+                    $('#modalMessage').hide();
+                }
+            });
+
+            // Enviar formulario
+            $('#salaForm').on('submit', async function (e) {
+                e.preventDefault();
+
+                const formData = {
+                    Numero: $('#Numero').val(),
+                    Capacidad: parseInt($('#Capacidad').val()),
+                    Ubicacion: $('#Ubicacion').val(),
+                    Estado: parseInt($('#Estado').val()),
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                };
+
+                const url = isEditMode ? `/Sala/Edit?id=${currentSalaId}` : '/Sala/Create';
+                const method = 'POST';
+
+                $('#btnSave').prop('disabled', true).text('Guardando...');
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': formData.__RequestVerificationToken
+                        },
+                        body: new URLSearchParams(formData).toString()
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        $('#salaModal').fadeOut(300);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showMessage(data.message, 'error', '#modalMessage');
+                    }
+                } catch (error) {
+                    showMessage('Ocurrió un error al guardar la sala', 'error', '#modalMessage');
+                } finally {
+                    $('#btnSave').prop('disabled', false).text('Guardar');
+                }
+            });
+
+            // Eliminar sala
+            $(document).on('click', '.delete-btn', async function () {
+                const salaId = $(this).data('sala-id');
+                const salaNombre = $(this).closest('tr').find('.sala-nombre').text();
+
+                if (!confirm(`¿Estás seguro de que deseas eliminar la sala "${salaNombre}"?`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/Sala/Delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        body: `id=${salaId}&__RequestVerificationToken=${$('input[name="__RequestVerificationToken"]').val()}`
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        $(`tr[data-sala-id="${salaId}"]`).fadeOut(300, function () {
+                            $(this).remove();
+                            if ($('#salasTableBody tr').length === 0) {
+                                $('#salasTableBody').html('<tr><td colspan="6" class="no-data">No hay salas registradas</td></tr>');
+                            }
+                        });
+                    } else {
+                        showMessage(data.message, 'error');
+                    }
+                } catch (error) {
+                    showMessage('Ocurrió un error al eliminar la sala', 'error');
+                }
+            });
+
+            // Búsqueda
+            $('#searchInput').on('keyup', function () {
+                const searchTerm = $(this).val().toLowerCase();
+                filterTable(searchTerm, $('#filterEstado').val());
+            });
+
+            // Filtro por estado
+            $('#filterEstado').on('change', function () {
+                filterTable($('#searchInput').val().toLowerCase(), $(this).val());
+            });
+
+            function filterTable(searchTerm, estadoFilter) {
+                $('#salasTableBody tr').each(function () {
+                    const nombre = $(this).find('.sala-nombre').text().toLowerCase();
+                    const ubicacion = $(this).find('td').eq(2).text().toLowerCase();
+                    const estado = $(this).find('.status-badge').hasClass('status-active') ? '1' : '0';
+
+                    const matchesSearch = nombre.includes(searchTerm) || ubicacion.includes(searchTerm);
+                    const matchesEstado = !estadoFilter || estado === estadoFilter;
+
+                    $(this).toggle(matchesSearch && matchesEstado);
+                });
+            }
+
+            function showMessage(message, type, container = '#messageContainer') {
+                const $container = $(container);
+                $container.removeClass('message-success message-error')
+                    .addClass(type === 'success' ? 'message-success' : 'message-error')
+                    .text(message)
+                    .fadeIn(300);
+
+                if (type === 'success') {
+                    setTimeout(() => {
+                        $container.fadeOut(300);
+                    }, 3000);
+                }
+            }
+        });
+    </script>
+}
+

@@ -77,8 +77,9 @@
     gap: 10px;
     padding: 6px 12px 6px 6px;
     border-radius: 999px;
-    background: #ffffff;
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.16);
+    background: transparent;
+    box-shadow: none;
+    cursor: default;
 }
 
 .admin-user-avatar {
@@ -111,8 +112,7 @@
 }
 
 .admin-user-arrow {
-    font-size: 18px;
-    color: #9ca3af;
+    display: none;
 }
 
 /* ----------- Tabs ----------- */
@@ -291,7 +291,7 @@
     padding: 14px 18px 16px;
 }
 
-/* Ocupación de salas */
+/* Ocupaciï¿½n de salas */
 
 .room-occupancy-item {
     margin-bottom: 14px;
