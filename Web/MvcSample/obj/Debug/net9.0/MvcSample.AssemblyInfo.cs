@@ -11,12 +11,12 @@
 using System;
 using System.Reflection;
 
-//[assembly: Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute("Bootstrap5")]
+[assembly: Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute("Bootstrap5")]
 [assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("aspnet-MvcSample-fc9c6a0f-a138-48c6-b207-5e73e4bf7b4f")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("MvcSample")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c1efb895ec00c3caa2737de2faf09224d40be55f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b033c2cc8c1734b3fe114c9062c334979f6b0ce5")]
 [assembly: System.Reflection.AssemblyProductAttribute("MvcSample")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MvcSample")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

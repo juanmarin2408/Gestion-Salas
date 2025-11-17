@@ -13,10 +13,6 @@ namespace Infrastructure
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
-        public DbSet<Milk> Milks { get; set; }
-        public DbSet<Cow> Cows { get; set; }
-        public DbSet<Farm> Farms { get; set; }
-
         public DbSet<Sala> Salas { get; set; }
 
         public DbSet<Usuario> Usuarios { get; set; }

@@ -6,22 +6,6 @@ using System.Threading.Tasks;
 
 namespace Domain.Enums
 {
-    public enum EquipmentType
-    {
-        Tractor,
-        Plow,
-        Harvester,
-        Seeder,
-        Sprayer
-    }
-
-    public enum EquipmentStatus
-    {
-        Available,
-        InUse,
-        UnderMaintenance,
-        Decommissioned
-    }
     public enum EstadoSala
     {
         Inactiva = 0,

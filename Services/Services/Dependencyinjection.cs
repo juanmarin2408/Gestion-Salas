@@ -8,10 +8,7 @@ namespace Services
     {
         public static IServiceCollection AddServices(this IServiceCollection services)
         {
-            // Servicios existentes
-            services.AddTransient<IFarmService, FarmService>();
-
-            // ✅ Servicio de usuarios: interfaz -> implementación
+            // Servicios
             services.AddScoped<IUserService, UserService>();
 
             // Hasher para contraseñas de Usuario

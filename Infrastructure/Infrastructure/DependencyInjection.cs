@@ -12,8 +12,7 @@ namespace Infrastructure
             var c = configuration.GetConnectionString("DefaultConnection");
 
             // Repositorios
-            services.AddScoped<IFarmRepository, FarmRepository>();
-            services.AddScoped<IUserRepository, UserRepository>(); // 👈 ESTE DEBE ESTAR
+            services.AddScoped<IUserRepository, UserRepository>();
 
             services.AddDbContext<AppDbContext>(options =>
             {
