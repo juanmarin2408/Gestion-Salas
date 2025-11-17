@@ -1,0 +1,293 @@
+@{
+    ViewData["Title"] = "Mi Panel";
+    ViewBag.HideFooter = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-dashboard.css" asp-append-version="true" />
+}
+
+<div class="user-page">
+    <!-- HEADER -->
+    <header class="user-header">
+        <div class="user-header-left">
+            <div class="user-logo-icon">
+                <span class="material-icon">▤</span>
+            </div>
+            <div class="user-logo-text">
+                <div class="user-app-name">Sistema de Salas</div>
+                <div class="user-app-subtitle">Universidad Santiago de Cali</div>
+            </div>
+        </div>
+
+        <div class="user-header-right">
+            <form asp-controller="Home" asp-action="Logout" method="post" style="display: inline;">
+                <button type="submit" class="user-logout" style="border: none; background: none; cursor: pointer; padding: 0;">
+                    <span class="user-logout-icon">⟲</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+
+            <div class="user-user-card">
+                <div class="user-user-avatar">@(Context.Session.GetString("Nombre")?.Substring(0, 1).ToUpper() ?? "U")@(Context.Session.GetString("Apellido")?.Substring(0, 1).ToUpper() ?? "S")</div>
+                <div class="user-user-text">
+                    <div class="user-user-name">@(Context.Session.GetString("Nombre") ?? "Usuario") @(Context.Session.GetString("Apellido") ?? "")</div>
+                    <div class="user-user-role">Usuario</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="user-tabs">
+        <a asp-controller="User" asp-action="Index" class="user-tab active">
+            <span class="user-tab-icon">🏠</span>
+            <span>Inicio</span>
+        </a>
+        <a asp-controller="User" asp-action="Salas" class="user-tab">
+            <span class="user-tab-icon">🏢</span>
+            <span>Salas</span>
+        </a>
+        <a asp-controller="User" asp-action="Equipos" class="user-tab">
+            <span class="user-tab-icon">💻</span>
+            <span>Mis Equipos</span>
+            @if ((ViewBag.EquiposAsignados ?? 0) > 0)
+            {
+                <span class="user-tab-badge">@(ViewBag.EquiposAsignados)</span>
+            }
+        </a>
+        <a asp-controller="User" asp-action="Solicitudes" class="user-tab">
+            <span class="user-tab-icon">📋</span>
+            <span>Solicitudes</span>
+            @if ((ViewBag.SolicitudesPendientes ?? 0) > 0)
+            {
+                <span class="user-tab-badge">@(ViewBag.SolicitudesPendientes)</span>
+            }
+        </a>
+        <button class="user-tab">
+            <span class="user-tab-icon">⚠</span>
+            <span>Reportes</span>
+        </button>
+        <button class="user-tab">
+            <span class="user-tab-icon">❓</span>
+            <span>Asesoría</span>
+        </button>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="user-main">
+        <!-- KPIs -->
+        <section class="user-kpi-grid">
+            <article class="user-kpi-card kpi-blue">
+                <div class="user-kpi-header">
+                    <span class="user-kpi-title">Equipos Asignados</span>
+                    <div class="user-kpi-icon">💻</div>
+                </div>
+                <div class="user-kpi-value">@(ViewBag.EquiposAsignados ?? 0)</div>
+            </article>
+
+            <article class="user-kpi-card kpi-orange">
+                <div class="user-kpi-header">
+                    <span class="user-kpi-title">Solicitudes Pendientes</span>
+                    <div class="user-kpi-icon">📋</div>
+                </div>
+                <div class="user-kpi-value">@(ViewBag.SolicitudesPendientes ?? 0)</div>
+            </article>
+
+            <article class="user-kpi-card kpi-red">
+                <div class="user-kpi-header">
+                    <span class="user-kpi-title">Reportes Activos</span>
+                    <div class="user-kpi-icon">⚠</div>
+                </div>
+                <div class="user-kpi-value">@(ViewBag.ReportesActivos ?? 0)</div>
+            </article>
+
+            <article class="user-kpi-card kpi-green">
+                <div class="user-kpi-header">
+                    <span class="user-kpi-title">Solicitudes Aprobadas</span>
+                    <div class="user-kpi-icon">✓</div>
+                </div>
+                <div class="user-kpi-value">@(ViewBag.SolicitudesAprobadas ?? 0)</div>
+            </article>
+        </section>
+
+        <!-- GRID: MIS EQUIPOS + ACTIVIDAD RECIENTE -->
+        <section class="user-panels-grid">
+            <!-- MIS EQUIPOS ASIGNADOS -->
+            <article class="user-panel">
+                <header class="user-panel-header panel-header-blue">
+                    <span class="user-panel-icon">💻</span>
+                    <span class="user-panel-title">Mis Equipos Asignados</span>
+                </header>
+
+                <div class="user-panel-body">
+                    @if (ViewBag.EquiposAsignadosList != null)
+                    {
+                        var equiposAsignados = (IList<Services.Models.EquipoModels.EquipoModel>)ViewBag.EquiposAsignadosList;
+                        @foreach (var equipo in equiposAsignados)
+                        {
+                            <div class="user-equipo-card">
+                                <div class="user-equipo-header">
+                                    <div class="user-equipo-info">
+                                        <div class="user-equipo-codigo">EQ-@equipo.Id.ToString().Substring(0, 8).ToUpper()</div>
+                                        <div class="user-equipo-sala">Sala: @equipo.SalaNumero</div>
+                                        @{
+                                            var solicitudesList = ViewBag.SolicitudesUsuario as IList<Services.Models.SolicitudModels.SolicitudModel>;
+                                            if (solicitudesList != null)
+                                            {
+                                                var solicitudEquipo = solicitudesList.FirstOrDefault(s => s.EquipoId == equipo.Id && s.Estado == Domain.Enums.EstadoSolicitud.Aprobada);
+                                                if (solicitudEquipo != null && solicitudEquipo.FechaAprobacion.HasValue)
+                                                {
+                                                    <div class="user-equipo-fecha">Desde: @solicitudEquipo.FechaAprobacion.Value.ToString("yyyy-MM-dd HH:mm")</div>
+                                                }
+                                            }
+                                        }
+                                    </div>
+                                    <span class="user-status-badge status-active">Activo</span>
+                                </div>
+                                <button type="button" class="user-btn-liberar" data-equipo-id="@equipo.Id">
+                                    Liberar Equipo
+                                </button>
+                            </div>
+                        }
+                        @if (equiposAsignados.Count == 0)
+                        {
+                            <div class="user-no-data">No tienes equipos asignados</div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="user-no-data">No tienes equipos asignados</div>
+                    }
+                </div>
+            </article>
+
+            <!-- ACTIVIDAD RECIENTE -->
+            <article class="user-panel">
+                <header class="user-panel-header panel-header-green">
+                    <span class="user-panel-icon">📋</span>
+                    <span class="user-panel-title">Actividad Reciente</span>
+                </header>
+
+                <div class="user-panel-body panel-body-list">
+                    @{
+                        var solicitudes = ViewBag.SolicitudesUsuario as IList<Services.Models.SolicitudModels.SolicitudModel>;
+                        if (solicitudes != null && solicitudes.Any())
+                        {
+                        @foreach (var solicitud in solicitudes.Take(3))
+                        {
+                            var tiempoTranscurrido = DateTime.UtcNow - solicitud.FechaSolicitud;
+                            var tiempoTexto = "";
+                            if (tiempoTranscurrido.TotalDays >= 1)
+                            {
+                                tiempoTexto = $"Hace {(int)tiempoTranscurrido.TotalDays} día(s)";
+                            }
+                            else if (tiempoTranscurrido.TotalHours >= 1)
+                            {
+                                tiempoTexto = $"Hace {(int)tiempoTranscurrido.TotalHours} hora(s)";
+                            }
+                            else
+                            {
+                                tiempoTexto = $"Hace {(int)tiempoTranscurrido.TotalMinutes} minuto(s)";
+                            }
+
+                            var estadoClass = solicitud.Estado switch
+                            {
+                                Domain.Enums.EstadoSolicitud.Aprobada => "status-approved",
+                                Domain.Enums.EstadoSolicitud.Pendiente => "status-pending",
+                                Domain.Enums.EstadoSolicitud.Rechazada => "status-rejected",
+                                _ => ""
+                            };
+                            var estadoTexto = solicitud.Estado switch
+                            {
+                                Domain.Enums.EstadoSolicitud.Aprobada => "Aprobado",
+                                Domain.Enums.EstadoSolicitud.Pendiente => "Pendiente",
+                                Domain.Enums.EstadoSolicitud.Rechazada => "Rechazado",
+                                _ => "Desconocido"
+                            };
+
+                            var actividadTexto = solicitud.Estado switch
+                            {
+                                Domain.Enums.EstadoSolicitud.Aprobada => $"Solicitud aprobada para {solicitud.SalaNumero}",
+                                Domain.Enums.EstadoSolicitud.Pendiente => $"Solicitud pendiente para {solicitud.SalaNumero}",
+                                Domain.Enums.EstadoSolicitud.Rechazada => $"Solicitud rechazada para {solicitud.SalaNumero}",
+                                _ => $"Solicitud para {solicitud.SalaNumero}"
+                            };
+
+                            <div class="user-activity-item">
+                                <div class="user-activity-left">
+                                    <div class="user-activity-text">
+                                        <div class="user-activity-title">@actividadTexto</div>
+                                        @if (solicitud.Estado == Domain.Enums.EstadoSolicitud.Aprobada && solicitud.EquipoCodigo != null)
+                                        {
+                                            <div class="user-activity-sub">Equipo: @solicitud.EquipoCodigo</div>
+                                        }
+                                        <div class="user-activity-time">@tiempoTexto</div>
+                                    </div>
+                                </div>
+                                <span class="user-status-badge @estadoClass">@estadoTexto</span>
+                            </div>
+                        }
+                        }
+                        else
+                        {
+                            <div class="user-no-data">No hay actividad reciente</div>
+                        }
+                    }
+                </div>
+            </article>
+        </section>
+
+        <!-- SALAS CON DISPONIBILIDAD -->
+        <section class="user-salas-section">
+            <h2 class="user-section-title">Salas con Disponibilidad</h2>
+            <div class="user-salas-grid">
+                @if (ViewBag.Salas != null)
+                {
+                    var salas = (IList<Services.Models.SalaModels.SalaModel>)ViewBag.Salas;
+                    var equiposList = ViewBag.EquiposList as IList<Services.Models.EquipoModels.EquipoModel>;
+                    var salasConEquipos = 0;
+                    
+                    @foreach (var sala in salas.Take(3))
+                    {
+                        var equiposDisponibles = equiposList != null 
+                            ? equiposList.Count(e => e.SalaId == sala.Id && e.Estado == Domain.Enums.EstadoEquipo.Disponible)
+                            : 0;
+                        
+                        if (equiposDisponibles > 0)
+                        {
+                            salasConEquipos++;
+                            <div class="user-sala-card">
+                                <div class="user-sala-header">
+                                    <h3 class="user-sala-nombre">@sala.Numero</h3>
+                                    <span class="user-sala-badge">@equiposDisponibles libres</span>
+                                </div>
+                                <div class="user-sala-info">
+                                    Capacidad total: @sala.Capacidad equipos
+                                </div>
+                                <button type="button" class="user-btn-solicitar" data-sala-id="@sala.Id">
+                                    Solicitar Equipo
+                                </button>
+                            </div>
+                        }
+                    }
+                    
+                    @if (salasConEquipos == 0)
+                    {
+                        <div class="user-no-data">No hay salas disponibles</div>
+                    }
+                }
+                else
+                {
+                    <div class="user-no-data">No hay salas disponibles</div>
+                }
+            </div>
+        </section>
+    </main>
+</div>
+
+@section Scripts {
+    <script src="~/js/user-dashboard.js" asp-append-version="true"></script>
+}
+

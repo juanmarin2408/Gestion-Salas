@@ -1,0 +1,229 @@
+@{
+    ViewData["Title"] = "Mis Solicitudes de Equipo";
+    ViewBag.HideFooter = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-solicitudes.css" asp-append-version="true" />
+}
+
+<div class="user-page">
+    <!-- HEADER -->
+    <header class="user-header">
+        <div class="user-header-left">
+            <div class="user-logo-icon">
+                <span class="material-icon">▤</span>
+            </div>
+            <div class="user-logo-text">
+                <div class="user-app-name">Sistema de Salas</div>
+                <div class="user-app-subtitle">Universidad Santiago de Cali</div>
+            </div>
+        </div>
+
+        <div class="user-header-right">
+            <form asp-controller="Home" asp-action="Logout" method="post" style="display: inline;">
+                <button type="submit" class="user-logout" style="border: none; background: none; cursor: pointer; padding: 0;">
+                    <span class="user-logout-icon">⟲</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+
+            <div class="user-user-card">
+                <div class="user-user-avatar">@(Context.Session.GetString("Nombre")?.Substring(0, 1).ToUpper() ?? "U")@(Context.Session.GetString("Apellido")?.Substring(0, 1).ToUpper() ?? "S")</div>
+                <div class="user-user-text">
+                    <div class="user-user-name">@(Context.Session.GetString("Nombre") ?? "Usuario") @(Context.Session.GetString("Apellido") ?? "")</div>
+                    <div class="user-user-role">Usuario</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="user-tabs">
+        <a asp-controller="User" asp-action="Index" class="user-tab">
+            <span class="user-tab-icon">🏠</span>
+            <span>Inicio</span>
+        </a>
+        <a asp-controller="User" asp-action="Salas" class="user-tab">
+            <span class="user-tab-icon">🏢</span>
+            <span>Salas</span>
+        </a>
+        <a asp-controller="User" asp-action="Equipos" class="user-tab">
+            <span class="user-tab-icon">💻</span>
+            <span>Mis Equipos</span>
+            @if ((ViewBag.EquiposAsignadosCount ?? 0) > 0)
+            {
+                <span class="user-tab-badge">@(ViewBag.EquiposAsignadosCount)</span>
+            }
+        </a>
+        <a asp-controller="User" asp-action="Solicitudes" class="user-tab active">
+            <span class="user-tab-icon">📋</span>
+            <span>Solicitudes</span>
+            @if ((ViewBag.SolicitudesPendientes ?? 0) > 0)
+            {
+                <span class="user-tab-badge">@(ViewBag.SolicitudesPendientes)</span>
+            }
+        </a>
+        <button class="user-tab">
+            <span class="user-tab-icon">⚠</span>
+            <span>Reportes</span>
+        </button>
+        <button class="user-tab">
+            <span class="user-tab-icon">❓</span>
+            <span>Asesoría</span>
+        </button>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="user-main">
+        <div class="solicitudes-header">
+            <h1 class="solicitudes-title">Mis Solicitudes de Equipo</h1>
+            <div class="solicitudes-filter">
+                <select id="filterEstado" class="filter-select">
+                    @if (ViewBag.EstadoFiltro == "Todos")
+                    {
+                        <option value="Todos" selected>Todos los estados</option>
+                    }
+                    else
+                    {
+                        <option value="Todos">Todos los estados</option>
+                    }
+                    @if (ViewBag.EstadoFiltro == "Pendientes")
+                    {
+                        <option value="Pendientes" selected>Pendientes</option>
+                    }
+                    else
+                    {
+                        <option value="Pendientes">Pendientes</option>
+                    }
+                    @if (ViewBag.EstadoFiltro == "Aprobadas")
+                    {
+                        <option value="Aprobadas" selected>Aprobadas</option>
+                    }
+                    else
+                    {
+                        <option value="Aprobadas">Aprobadas</option>
+                    }
+                    @if (ViewBag.EstadoFiltro == "Rechazadas")
+                    {
+                        <option value="Rechazadas" selected>Rechazadas</option>
+                    }
+                    else
+                    {
+                        <option value="Rechazadas">Rechazadas</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div id="messageContainer"></div>
+
+        @if (ViewBag.SolicitudesUsuario != null)
+        {
+            var solicitudes = (IList<Services.Models.SolicitudModels.SolicitudModel>)ViewBag.SolicitudesUsuario;
+            
+            @if (solicitudes.Count > 0)
+            {
+                <div class="solicitudes-table-container">
+                    <table class="solicitudes-table">
+                        <thead>
+                            <tr>
+                                <th>Sala</th>
+                                <th>Tiempo Estimado</th>
+                                <th>Fecha Solicitud</th>
+                                <th>Estado</th>
+                                <th>Equipo Asignado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var solicitud in solicitudes)
+                            {
+                                var estadoClass = solicitud.Estado switch
+                                {
+                                    Domain.Enums.EstadoSolicitud.Pendiente => "status-pendiente",
+                                    Domain.Enums.EstadoSolicitud.Aprobada => "status-aprobada",
+                                    Domain.Enums.EstadoSolicitud.Rechazada => "status-rechazada",
+                                    _ => ""
+                                };
+
+                                var estadoTexto = solicitud.Estado switch
+                                {
+                                    Domain.Enums.EstadoSolicitud.Pendiente => "Pendiente",
+                                    Domain.Enums.EstadoSolicitud.Aprobada => "Aprobada",
+                                    Domain.Enums.EstadoSolicitud.Rechazada => "Rechazada",
+                                    _ => ""
+                                };
+
+                                var estadoIcon = solicitud.Estado switch
+                                {
+                                    Domain.Enums.EstadoSolicitud.Pendiente => "⏰",
+                                    Domain.Enums.EstadoSolicitud.Aprobada => "✓",
+                                    Domain.Enums.EstadoSolicitud.Rechazada => "✗",
+                                    _ => ""
+                                };
+
+                                <tr data-solicitud-id="@solicitud.Id" data-estado="@((int)solicitud.Estado)">
+                                    <td class="solicitud-sala">@solicitud.SalaNumero</td>
+                                    <td class="solicitud-tiempo">@solicitud.TiempoEstimado @(solicitud.TiempoEstimado != 1 ? "horas" : "hora")</td>
+                                    <td class="solicitud-fecha">@solicitud.FechaSolicitud.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td class="solicitud-estado">
+                                        <span class="status-badge @estadoClass">
+                                            <span class="status-icon">@estadoIcon</span>
+                                            <span>@estadoTexto</span>
+                                        </span>
+                                    </td>
+                                    <td class="solicitud-equipo">
+                                        @if (solicitud.Estado == Domain.Enums.EstadoSolicitud.Aprobada && !string.IsNullOrEmpty(solicitud.EquipoCodigo))
+                                        {
+                                            <span>EQ-@solicitud.EquipoCodigo</span>
+                                        }
+                                        else if (solicitud.Estado == Domain.Enums.EstadoSolicitud.Rechazada && !string.IsNullOrEmpty(solicitud.MotivoRechazo))
+                                        {
+                                            <div class="motivo-rechazo">
+                                                <strong>Motivo:</strong> @solicitud.MotivoRechazo
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
+                                        }
+                                    </td>
+                                    <td class="solicitud-acciones">
+                                        @if (solicitud.Estado == Domain.Enums.EstadoSolicitud.Pendiente)
+                                        {
+                                            <button type="button" class="btn-cancelar" data-solicitud-id="@solicitud.Id">
+                                                Cancelar
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="user-no-data">
+                    <div class="no-data-icon">📋</div>
+                    <div class="no-data-text">No hay solicitudes disponibles</div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="user-no-data">
+                <div class="no-data-icon">📋</div>
+                <div class="no-data-text">No hay solicitudes disponibles</div>
+            </div>
+        }
+    </main>
+</div>
+
+@section Scripts {
+    <script src="~/js/user-solicitudes.js" asp-append-version="true"></script>
+}
+

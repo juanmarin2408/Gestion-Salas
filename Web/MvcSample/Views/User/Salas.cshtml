@@ -1,0 +1,256 @@
+@{
+    ViewData["Title"] = "Consultar Estado de Salas";
+    ViewBag.HideFooter = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-salas.css" asp-append-version="true" />
+}
+
+<div class="user-page">
+    <!-- HEADER -->
+    <header class="user-header">
+        <div class="user-header-left">
+            <div class="user-logo-icon">
+                <span class="material-icon">▤</span>
+            </div>
+            <div class="user-logo-text">
+                <div class="user-app-name">Sistema de Salas</div>
+                <div class="user-app-subtitle">Universidad Santiago de Cali</div>
+            </div>
+        </div>
+
+        <div class="user-header-right">
+            <form asp-controller="Home" asp-action="Logout" method="post" style="display: inline;">
+                <button type="submit" class="user-logout" style="border: none; background: none; cursor: pointer; padding: 0;">
+                    <span class="user-logout-icon">⟲</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+
+            <div class="user-user-card">
+                <div class="user-user-avatar">@(Context.Session.GetString("Nombre")?.Substring(0, 1).ToUpper() ?? "U")@(Context.Session.GetString("Apellido")?.Substring(0, 1).ToUpper() ?? "S")</div>
+                <div class="user-user-text">
+                    <div class="user-user-name">@(Context.Session.GetString("Nombre") ?? "Usuario") @(Context.Session.GetString("Apellido") ?? "")</div>
+                    <div class="user-user-role">Usuario</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="user-tabs">
+        <a asp-controller="User" asp-action="Index" class="user-tab">
+            <span class="user-tab-icon">🏠</span>
+            <span>Inicio</span>
+        </a>
+        <a asp-controller="User" asp-action="Salas" class="user-tab active">
+            <span class="user-tab-icon">🏢</span>
+            <span>Salas</span>
+        </a>
+        <a asp-controller="User" asp-action="Equipos" class="user-tab">
+            <span class="user-tab-icon">💻</span>
+            <span>Mis Equipos</span>
+            @if ((ViewBag.EquiposAsignadosCount ?? 0) > 0)
+            {
+                <span class="user-tab-badge">@(ViewBag.EquiposAsignadosCount)</span>
+            }
+        </a>
+        <a asp-controller="User" asp-action="Solicitudes" class="user-tab">
+            <span class="user-tab-icon">📋</span>
+            <span>Solicitudes</span>
+            @if ((ViewBag.SolicitudesPendientes ?? 0) > 0)
+            {
+                <span class="user-tab-badge">@(ViewBag.SolicitudesPendientes)</span>
+            }
+        </a>
+        <button class="user-tab">
+            <span class="user-tab-icon">⚠</span>
+            <span>Reportes</span>
+        </button>
+        <button class="user-tab">
+            <span class="user-tab-icon">❓</span>
+            <span>Asesoría</span>
+        </button>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="user-main">
+        <h1 class="salas-title">Consultar Estado de Salas</h1>
+
+        <div class="salas-grid">
+            @if (ViewBag.SalasConInfo != null)
+            {
+                var salasConInfo = ViewBag.SalasConInfo as dynamic;
+                if (salasConInfo != null)
+                {
+                    @foreach (var item in salasConInfo)
+                    {
+                        var sala = item.Sala as Services.Models.SalaModels.SalaModel;
+                        var estado = item.Estado as string;
+                        var equiposDisponibles = (int)item.EquiposDisponibles;
+                        var equiposAsignados = (int)item.EquiposAsignados;
+                        var equiposEnMantenimiento = (int)item.EquiposEnMantenimiento;
+                        var totalEquipos = sala.TotalEquipos;
+                        
+                        if (sala != null)
+                        {
+                            var estadoClass = estado switch
+                            {
+                                "Libre" => "estado-libre",
+                                "Ocupada" => "estado-ocupada",
+                                "Mantenimiento" => "estado-mantenimiento",
+                                _ => "estado-libre"
+                            };
+
+                            var puedeSolicitar = estado == "Libre" && equiposDisponibles > 0;
+
+                            <div class="sala-card">
+                                <div class="sala-icon">🏢</div>
+                                <div class="sala-header">
+                                    <h3 class="sala-nombre">@sala.Numero</h3>
+                                    <span class="sala-estado @estadoClass">@estado</span>
+                                </div>
+                                <div class="sala-info">
+                                    <div class="sala-info-item">
+                                        <span class="sala-info-icon">📍</span>
+                                        <span>@sala.Ubicacion</span>
+                                    </div>
+                                    <div class="sala-info-item">
+                                        <span class="sala-info-icon">👥</span>
+                                        <span>Capacidad: @sala.Capacidad personas</span>
+                                    </div>
+                                    <div class="sala-info-item">
+                                        <span class="sala-info-icon">💻</span>
+                                        <span>@equiposDisponibles disponibles / @totalEquipos totales</span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(sala.UsuarioNombre))
+                                    {
+                                        <div class="sala-info-item sala-info-asignado">
+                                            <span class="sala-info-icon">👤</span>
+                                            <span>Asignado a: @sala.UsuarioNombre</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="sala-actions">
+                                    <button type="button" class="btn-ver-detalles" data-sala-id="@sala.Id">
+                                        Ver Detalles
+                                    </button>
+                                    <button type="button" class="btn-solicitar @(puedeSolicitar ? "" : "disabled")" data-sala-id="@sala.Id" @(puedeSolicitar ? "" : "disabled")>
+                                        Solicitar
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+            }
+        </div>
+    </main>
+</div>
+
+<!-- Modal Detalles de Sala -->
+<div id="modalDetalles" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalDetallesTitle">Detalles de Sala</h2>
+            <button type="button" class="modal-close" onclick="cerrarModalDetalles()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-subtitle">Información completa de la sala</div>
+            <div class="modal-info-grid">
+                <div class="modal-info-col">
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">Ubicación</span>
+                        <span class="modal-info-value" id="modalDetallesUbicacion"></span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">Equipos Totales</span>
+                        <span class="modal-info-value" id="modalDetallesTotalEquipos"></span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">Estado</span>
+                        <span class="modal-info-value" id="modalDetallesEstado"></span>
+                    </div>
+                </div>
+                <div class="modal-info-col">
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">Capacidad</span>
+                        <span class="modal-info-value" id="modalDetallesCapacidad"></span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">Equipos Disponibles</span>
+                        <span class="modal-info-value" id="modalDetallesEquiposDisponibles"></span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">Asignación Docente</span>
+                        <span class="modal-info-value" id="modalDetallesAsignacion"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-horario">
+                <span class="modal-horario-icon">⏰</span>
+                <span>Horario de disponibilidad: Lunes a Viernes, 8:00 AM - 6:00 PM</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cerrar" onclick="cerrarModalDetalles()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Solicitar Equipo -->
+<div id="modalSolicitar" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalSolicitarTitle">Solicitar Equipo en Sala</h2>
+            <button type="button" class="modal-close" onclick="cerrarModalSolicitar()">&times;</button>
+        </div>
+        <form id="formSolicitar" onsubmit="enviarSolicitud(event)">
+            @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <div class="modal-subtitle">Ingresa el tiempo estimado de uso</div>
+                <div class="modal-solicitar-info">
+                    <div class="modal-solicitar-item">
+                        <span class="modal-solicitar-label">Sala:</span>
+                        <span class="modal-solicitar-value" id="modalSolicitarSala"></span>
+                    </div>
+                    <div class="modal-solicitar-item">
+                        <span class="modal-solicitar-label">Ubicación:</span>
+                        <span class="modal-solicitar-value" id="modalSolicitarUbicacion"></span>
+                    </div>
+                    <div class="modal-solicitar-item">
+                        <span class="modal-solicitar-label">Equipos disponibles:</span>
+                        <span class="modal-solicitar-value" id="modalSolicitarEquipos"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="tiempoEstimado">Tiempo Estimado de Uso *</label>
+                    <select id="tiempoEstimado" name="TiempoEstimado" class="form-control" required>
+                        <option value="">Selecciona el tiempo</option>
+                        <option value="1">1 hora</option>
+                        <option value="2">2 horas</option>
+                        <option value="3">3 horas</option>
+                        <option value="4">4 horas</option>
+                        <option value="5">5 horas</option>
+                        <option value="6">6 horas</option>
+                        <option value="7">7 horas</option>
+                        <option value="8">8 horas</option>
+                    </select>
+                    <input type="hidden" id="salaIdSolicitar" name="SalaId" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancelar" onclick="cerrarModalSolicitar()">Cancelar</button>
+                <button type="submit" class="btn-enviar">Enviar Solicitud</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/user-salas.js" asp-append-version="true"></script>
+}
+

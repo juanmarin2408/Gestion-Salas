@@ -72,6 +72,27 @@
     transform: translateY(-1px);
 }
 
+.btn-rechazar-submit {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.btn-rechazar-submit:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.btn-rechazar-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .solicitud-user {
     display: flex;
     flex-direction: column;

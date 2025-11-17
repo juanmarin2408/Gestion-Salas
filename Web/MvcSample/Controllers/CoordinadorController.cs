@@ -47,6 +47,10 @@ namespace MvcSample.Controllers
             ViewBag.Salas = salas;
             ViewBag.Equipos = equipos;
 
+            // Obtener solicitudes pendientes para mostrar en el dashboard
+            var solicitudesPendientes = await _solicitudService.GetSolicitudesByEstado(Domain.Enums.EstadoSolicitud.Pendiente);
+            ViewBag.SolicitudesPendientesList = solicitudesPendientes.OrderByDescending(s => s.FechaSolicitud).Take(5).ToList();
+
             return View("CoordinadorDashboard");
         }
 
@@ -65,8 +69,25 @@ namespace MvcSample.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AprobarSolicitud(Guid id)
         {
-            // TODO: Implementar cuando tengas el servicio de solicitudes
-            return Json(new { success = false, message = "Funcionalidad en desarrollo" });
+            var coordinadorIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(coordinadorIdString) || !Guid.TryParse(coordinadorIdString, out var coordinadorId))
+            {
+                return Json(new { success = false, message = "Usuario no autenticado." });
+            }
+
+            try
+            {
+                await _solicitudService.AprobarSolicitud(id, coordinadorId);
+                return Json(new { success = true, message = "Solicitud aprobada exitosamente. El equipo ha sido asignado al usuario." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Ocurrió un error al aprobar la solicitud: " + ex.Message });
+            }
         }
 
         // POST: Coordinador/RechazarSolicitud
@@ -74,8 +95,34 @@ namespace MvcSample.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RechazarSolicitud(Guid id, string MotivoRechazo)
         {
-            // TODO: Implementar cuando tengas el servicio de solicitudes
-            return Json(new { success = false, message = "Funcionalidad en desarrollo" });
+            var coordinadorIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(coordinadorIdString) || !Guid.TryParse(coordinadorIdString, out var coordinadorId))
+            {
+                return Json(new { success = false, message = "Usuario no autenticado." });
+            }
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(MotivoRechazo))
+                {
+                    return Json(new { success = false, message = "El motivo del rechazo es obligatorio." });
+                }
+
+                await _solicitudService.RechazarSolicitud(id, coordinadorId, MotivoRechazo);
+                return Json(new { success = true, message = "Solicitud rechazada exitosamente." });
+            }
+            catch (ArgumentException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Ocurrió un error al rechazar la solicitud: " + ex.Message });
+            }
         }
 
         // GET: Coordinador/Equipos
@@ -211,71 +258,6 @@ namespace MvcSample.Controllers
             }
         }
 
-        // GET: Coordinador/Calendario
-        public async Task<IActionResult> Calendario(string fechaSemana, Guid? salaId)
-        {
-            // Parsear la fecha de la semana (lunes)
-            DateTime fechaSemanaLunes;
-            if (string.IsNullOrEmpty(fechaSemana))
-            {
-                // Si no hay fecha, usar la semana actual
-                var hoy = DateTime.UtcNow.Date;
-                var diaSemana = (int)hoy.DayOfWeek;
-                if (diaSemana == 0) diaSemana = 7; // Domingo = 7
-                fechaSemanaLunes = hoy.AddDays(-(diaSemana - 1));
-            }
-            else
-            {
-                // Intentar parsear la fecha (puede venir en formato yyyy-MM-dd)
-                if (!DateTime.TryParse(fechaSemana, out fechaSemanaLunes))
-                {
-                    // Si falla, intentar parsear solo la fecha sin hora
-                    if (DateTime.TryParseExact(fechaSemana, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out fechaSemanaLunes))
-                    {
-                        fechaSemanaLunes = fechaSemanaLunes.Date;
-                    }
-                    else
-                    {
-                        fechaSemanaLunes = DateTime.UtcNow.Date;
-                    }
-                }
-                else
-                {
-                    fechaSemanaLunes = fechaSemanaLunes.Date;
-                }
-                
-                // Asegurar que sea UTC
-                if (fechaSemanaLunes.Kind != DateTimeKind.Utc)
-                {
-                    fechaSemanaLunes = DateTime.SpecifyKind(fechaSemanaLunes, DateTimeKind.Utc);
-                }
-                
-                // Asegurar que sea el lunes de esa semana
-                var diaSemana = (int)fechaSemanaLunes.DayOfWeek;
-                if (diaSemana == 0) diaSemana = 7;
-                fechaSemanaLunes = fechaSemanaLunes.AddDays(-(diaSemana - 1)).Date;
-            }
-
-            // Obtener todas las salas para el filtro
-            var salas = await _salaService.GetSalas();
-            
-            // Si no hay sala seleccionada, usar la primera sala disponible
-            if (!salaId.HasValue && salas.Any())
-            {
-                salaId = salas.First().Id;
-            }
-            
-            // Obtener ocupaciones para la semana
-            var ocupaciones = await _solicitudService.GetOcupacionesPorSemana(fechaSemanaLunes, salaId);
-            
-            ViewBag.SolicitudesPendientes = await _solicitudService.GetSolicitudesPendientesCount();
-            ViewBag.ReportesDanos = await _reporteService.GetReportesPendientesCount();
-            ViewBag.Salas = salas;
-            ViewBag.FechaSemana = fechaSemanaLunes;
-            ViewBag.SalaFiltro = salaId;
-
-            return View(ocupaciones);
-        }
     }
 }
 

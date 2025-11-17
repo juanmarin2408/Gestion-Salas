@@ -15,11 +15,16 @@ namespace Services
     public class SolicitudPrestamoService : ISolicitudPrestamoService
     {
         private readonly ISolicitudPrestamoRepository _solicitudRepository;
+        private readonly IEquipoRepository _equipoRepository;
         private readonly IMapper _mapper;
 
-        public SolicitudPrestamoService(ISolicitudPrestamoRepository solicitudRepository, IMapper mapper)
+        public SolicitudPrestamoService(
+            ISolicitudPrestamoRepository solicitudRepository, 
+            IEquipoRepository equipoRepository,
+            IMapper mapper)
         {
             _solicitudRepository = solicitudRepository;
+            _equipoRepository = equipoRepository;
             _mapper = mapper;
         }
 
@@ -195,6 +200,140 @@ namespace Services
             }
 
             return ocupaciones.OrderBy(o => o.FechaInicio).ToList();
+        }
+
+        public async Task Create(AddSolicitudModel model)
+        {
+            var solicitud = new SolicitudPrestamo
+            {
+                Id = Guid.NewGuid(),
+                UsuarioId = model.UsuarioId,
+                SalaId = model.SalaId,
+                EquipoId = model.EquipoId,
+                TiempoEstimado = model.TiempoEstimado,
+                FechaSolicitud = DateTime.UtcNow,
+                Estado = EstadoSolicitud.Pendiente
+            };
+
+            await _solicitudRepository.Save(solicitud);
+        }
+
+        public async Task AprobarSolicitud(Guid solicitudId, Guid aprobadoPorId, Guid? equipoId = null)
+        {
+            var solicitud = await _solicitudRepository.GetSolicitud(solicitudId);
+            if (solicitud == null)
+            {
+                throw new InvalidOperationException("Solicitud no encontrada.");
+            }
+
+            if (solicitud.Estado != EstadoSolicitud.Pendiente)
+            {
+                throw new InvalidOperationException("Solo se pueden aprobar solicitudes pendientes.");
+            }
+
+            // Si no se proporciona un equipo, buscar uno disponible en la sala
+            if (!equipoId.HasValue)
+            {
+                var equiposDisponibles = await _equipoRepository.GetEquiposBySalaId(solicitud.SalaId);
+                var equipoDisponible = equiposDisponibles.FirstOrDefault(e => e.Estado == EstadoEquipo.Disponible);
+                
+                if (equipoDisponible == null)
+                {
+                    throw new InvalidOperationException("No hay equipos disponibles en la sala solicitada.");
+                }
+
+                equipoId = equipoDisponible.Id;
+            }
+
+            // Obtener el equipo para actualizarlo (sin AsNoTracking)
+            var equipo = await _equipoRepository.GetEquipo(equipoId.Value);
+            if (equipo == null)
+            {
+                throw new InvalidOperationException("Equipo no encontrado.");
+            }
+
+            if (equipo.Estado != EstadoEquipo.Disponible)
+            {
+                throw new InvalidOperationException("El equipo seleccionado no está disponible.");
+            }
+
+            if (equipo.SalaId != solicitud.SalaId)
+            {
+                throw new InvalidOperationException("El equipo no pertenece a la sala solicitada.");
+            }
+
+            // Asignar el equipo al usuario
+            equipo.Estado = EstadoEquipo.Asignado;
+            equipo.AsignadoAId = solicitud.UsuarioId;
+            await _equipoRepository.Update(equipo);
+
+            // Actualizar la solicitud
+            solicitud.Estado = EstadoSolicitud.Aprobada;
+            solicitud.EquipoId = equipoId.Value;
+            solicitud.FechaAprobacion = DateTime.UtcNow;
+            solicitud.AprobadoPorId = aprobadoPorId;
+            solicitud.FechaRechazo = null;
+            solicitud.MotivoRechazo = null;
+
+            await _solicitudRepository.Update(solicitud);
+        }
+
+        public async Task RechazarSolicitud(Guid solicitudId, Guid rechazadoPorId, string motivoRechazo)
+        {
+            if (string.IsNullOrWhiteSpace(motivoRechazo))
+            {
+                throw new ArgumentException("El motivo del rechazo es obligatorio.", nameof(motivoRechazo));
+            }
+
+            var solicitud = await _solicitudRepository.GetSolicitud(solicitudId);
+            if (solicitud == null)
+            {
+                throw new InvalidOperationException("Solicitud no encontrada.");
+            }
+
+            if (solicitud.Estado != EstadoSolicitud.Pendiente)
+            {
+                throw new InvalidOperationException("Solo se pueden rechazar solicitudes pendientes.");
+            }
+
+            // Actualizar la solicitud
+            solicitud.Estado = EstadoSolicitud.Rechazada;
+            solicitud.FechaRechazo = DateTime.UtcNow;
+            solicitud.MotivoRechazo = motivoRechazo;
+            solicitud.AprobadoPorId = rechazadoPorId; // Guardamos quien rechazó
+            solicitud.FechaAprobacion = null;
+            solicitud.EquipoId = null;
+
+            await _solicitudRepository.Update(solicitud);
+        }
+
+        public async Task CancelarSolicitud(Guid solicitudId, Guid usuarioId)
+        {
+            var solicitud = await _solicitudRepository.GetSolicitud(solicitudId);
+            if (solicitud == null)
+            {
+                throw new InvalidOperationException("Solicitud no encontrada.");
+            }
+
+            if (solicitud.UsuarioId != usuarioId)
+            {
+                throw new InvalidOperationException("No tienes permiso para cancelar esta solicitud.");
+            }
+
+            if (solicitud.Estado != EstadoSolicitud.Pendiente)
+            {
+                throw new InvalidOperationException("Solo se pueden cancelar solicitudes pendientes.");
+            }
+
+            // Marcar como rechazada con motivo de cancelación
+            solicitud.Estado = EstadoSolicitud.Rechazada;
+            solicitud.FechaRechazo = DateTime.UtcNow;
+            solicitud.MotivoRechazo = "Cancelada por el usuario";
+            solicitud.AprobadoPorId = null;
+            solicitud.FechaAprobacion = null;
+            solicitud.EquipoId = null;
+
+            await _solicitudRepository.Update(solicitud);
         }
     }
 }

@@ -67,10 +67,6 @@
                 <span class="tab-badge">@(ViewBag.ReportesDanos)</span>
             }
         </a>
-        <a asp-controller="Coordinador" asp-action="Calendario" class="admin-tab">
-            <span class="admin-tab-icon">📅</span>
-            <span>Calendario</span>
-        </a>
     </div>
 
     <!-- CONTENIDO PRINCIPAL -->
@@ -200,13 +196,13 @@
 
             <div class="form-field">
                 <label for="MotivoRechazo">Motivo del Rechazo *</label>
-                <textarea id="MotivoRechazo" name="MotivoRechazo" required maxlength="500" rows="4" placeholder="Ej: No hay equipos disponibles en la sala solicitada..."></textarea>
+                <textarea id="MotivoRechazo" name="MotivoRechazo" maxlength="500" rows="4" placeholder="Ej: No hay equipos disponibles en la sala solicitada..."></textarea>
                 <span class="field-error"></span>
             </div>
 
             <div class="modal-actions">
                 <button type="button" class="btn-cancel" id="btnCancelRechazar">Cancelar</button>
-                <button type="submit" class="btn-rechazar" id="btnRechazar">Rechazar Solicitud</button>
+                <button type="submit" class="btn-rechazar-submit" id="btnRechazar">Rechazar Solicitud</button>
             </div>
         </form>
     </div>

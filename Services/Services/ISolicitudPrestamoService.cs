@@ -16,6 +16,10 @@ namespace Services
         Task<int> GetSolicitudesUrgentesCount();
         Task<IList<UserModel>> GetUsuariosConSolicitudes();
         Task<IList<OcupacionModel>> GetOcupacionesPorSemana(DateTime fechaSemana, Guid? salaId = null);
+        Task Create(AddSolicitudModel model);
+        Task AprobarSolicitud(Guid solicitudId, Guid aprobadoPorId, Guid? equipoId = null);
+        Task RechazarSolicitud(Guid solicitudId, Guid rechazadoPorId, string motivoRechazo);
+        Task CancelarSolicitud(Guid solicitudId, Guid usuarioId);
     }
 }
 

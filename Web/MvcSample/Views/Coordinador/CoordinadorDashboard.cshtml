@@ -65,10 +65,6 @@
                 <span class="tab-badge">@(ViewBag.ReportesDanos)</span>
             }
         </a>
-        <a asp-controller="Coordinador" asp-action="Calendario" class="admin-tab">
-            <span class="admin-tab-icon">📅</span>
-            <span>Calendario</span>
-        </a>
     </div>
 
     <!-- CONTENIDO PRINCIPAL -->
@@ -142,38 +138,60 @@
                 </header>
 
                 <div class="admin-panel-body panel-body-list">
-                    <!-- TODO: Implementar cuando tengas el modelo de solicitudes -->
-                    <div class="solicitud-item">
-                        <div class="solicitud-header">
-                            <span class="solicitud-nombre">Juan Pérez</span>
-                            <span class="solicitud-badge urgent-badge">Urgente</span>
-                        </div>
-                        <div class="solicitud-details">
-                            <span>Sala: Lab-A1</span>
-                            <span class="solicitud-time">Hace 2 horas</span>
-                        </div>
-                    </div>
+                    @if (ViewBag.SolicitudesPendientesList != null)
+                    {
+                        var solicitudes = (IList<Services.Models.SolicitudModels.SolicitudModel>)ViewBag.SolicitudesPendientesList;
+                        
+                        @foreach (var solicitud in solicitudes)
+                        {
+                            var tiempoTranscurrido = DateTime.UtcNow - solicitud.FechaSolicitud;
+                            var esUrgente = tiempoTranscurrido.TotalHours >= 24;
+                            
+                            string tiempoTexto;
+                            if (tiempoTranscurrido.TotalDays >= 1)
+                            {
+                                var dias = (int)tiempoTranscurrido.TotalDays;
+                                tiempoTexto = dias == 1 ? "Hace 1 día" : $"Hace {dias} días";
+                            }
+                            else if (tiempoTranscurrido.TotalHours >= 1)
+                            {
+                                var horas = (int)tiempoTranscurrido.TotalHours;
+                                tiempoTexto = horas == 1 ? "Hace 1 hora" : $"Hace {horas} horas";
+                            }
+                            else
+                            {
+                                var minutos = (int)tiempoTranscurrido.TotalMinutes;
+                                tiempoTexto = minutos <= 1 ? "Hace un momento" : $"Hace {minutos} minutos";
+                            }
 
-                    <div class="solicitud-item">
-                        <div class="solicitud-header">
-                            <span class="solicitud-nombre">María García</span>
-                        </div>
-                        <div class="solicitud-details">
-                            <span>Sala: Lab-B1</span>
-                            <span class="solicitud-time">Hace 5 horas</span>
-                        </div>
-                    </div>
+                            <div class="solicitud-item">
+                                <div class="solicitud-header">
+                                    <span class="solicitud-nombre">@solicitud.UsuarioNombre</span>
+                                    @if (esUrgente)
+                                    {
+                                        <span class="solicitud-badge urgent-badge">URGENTE</span>
+                                    }
+                                </div>
+                                <div class="solicitud-details">
+                                    <span>Sala: @solicitud.SalaNumero</span>
+                                    <span class="solicitud-time">@tiempoTexto</span>
+                                </div>
+                            </div>
+                        }
 
-                    <div class="solicitud-item">
-                        <div class="solicitud-header">
-                            <span class="solicitud-nombre">Pedro López</span>
-                            <span class="solicitud-badge urgent-badge">Urgente</span>
+                        @if (solicitudes.Count == 0)
+                        {
+                            <div style="text-align: center; padding: 20px; color: #9ca3af;">
+                                No hay solicitudes pendientes
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div style="text-align: center; padding: 20px; color: #9ca3af;">
+                            No hay solicitudes pendientes
                         </div>
-                        <div class="solicitud-details">
-                            <span>Sala: Lab-A2</span>
-                            <span class="solicitud-time">Hace 1 día</span>
-                        </div>
-                    </div>
+                    }
                 </div>
             </article>
 

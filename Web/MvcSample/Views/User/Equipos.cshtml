@@ -1,0 +1,332 @@
+@{
+    ViewData["Title"] = "Mis Equipos";
+    ViewBag.HideFooter = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-equipos.css" asp-append-version="true" />
+}
+
+<div class="user-page">
+    <!-- HEADER -->
+    <header class="user-header">
+        <div class="user-header-left">
+            <div class="user-logo-icon">
+                <span class="material-icon">▤</span>
+            </div>
+            <div class="user-logo-text">
+                <div class="user-app-name">Sistema de Salas</div>
+                <div class="user-app-subtitle">Universidad Santiago de Cali</div>
+            </div>
+        </div>
+
+        <div class="user-header-right">
+            <form asp-controller="Home" asp-action="Logout" method="post" style="display: inline;">
+                <button type="submit" class="user-logout" style="border: none; background: none; cursor: pointer; padding: 0;">
+                    <span class="user-logout-icon">⟲</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+
+            <div class="user-user-card">
+                <div class="user-user-avatar">@(Context.Session.GetString("Nombre")?.Substring(0, 1).ToUpper() ?? "U")@(Context.Session.GetString("Apellido")?.Substring(0, 1).ToUpper() ?? "S")</div>
+                <div class="user-user-text">
+                    <div class="user-user-name">@(Context.Session.GetString("Nombre") ?? "Usuario") @(Context.Session.GetString("Apellido") ?? "")</div>
+                    <div class="user-user-role">Usuario</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="user-tabs">
+        <a asp-controller="User" asp-action="Index" class="user-tab">
+            <span class="user-tab-icon">🏠</span>
+            <span>Inicio</span>
+        </a>
+        <a asp-controller="User" asp-action="Salas" class="user-tab">
+            <span class="user-tab-icon">🏢</span>
+            <span>Salas</span>
+        </a>
+        <a asp-controller="User" asp-action="Equipos" class="user-tab active">
+            <span class="user-tab-icon">💻</span>
+            <span>Mis Equipos</span>
+            @if ((ViewBag.EquiposAsignadosCount ?? 0) > 0)
+            {
+                <span class="user-tab-badge">@(ViewBag.EquiposAsignadosCount)</span>
+            }
+        </a>
+        <a asp-controller="User" asp-action="Solicitudes" class="user-tab">
+            <span class="user-tab-icon">📋</span>
+            <span>Solicitudes</span>
+            @if ((ViewBag.SolicitudesPendientes ?? 0) > 0)
+            {
+                <span class="user-tab-badge">@(ViewBag.SolicitudesPendientes)</span>
+            }
+        </a>
+        <button class="user-tab">
+            <span class="user-tab-icon">⚠</span>
+            <span>Reportes</span>
+        </button>
+        <button class="user-tab">
+            <span class="user-tab-icon">❓</span>
+            <span>Asesoría</span>
+        </button>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="user-main">
+        @Html.AntiForgeryToken()
+        <!-- MIS EQUIPOS ASIGNADOS -->
+        <section class="user-equipos-section">
+            <h2 class="user-section-title">Mis Equipos Asignados</h2>
+            <div class="user-equipos-list">
+                @if (ViewBag.EquiposAsignados != null)
+                {
+                    var equiposAsignados = ViewBag.EquiposAsignados as IEnumerable<dynamic>;
+                    var equiposList = equiposAsignados != null ? equiposAsignados.ToList() : new List<dynamic>();
+                    var tieneEquipos = equiposList.Any();
+                    
+                    @if (tieneEquipos)
+                    {
+                        @foreach (dynamic item in equiposList)
+                        {
+                            var equipo = (Services.Models.EquipoModels.EquipoModel)item.Equipo;
+                            var solicitud = item.Solicitud as Services.Models.SolicitudModels.SolicitudModel;
+                            var sala = item.Sala as Services.Models.SalaModels.SalaModel;
+                            var fechaAsignacion = (DateTime)item.FechaAsignacion;
+                            var tiempoUso = (TimeSpan)item.TiempoUso;
+                            var fechaRetornoEstimada = item.FechaRetornoEstimada as DateTime?;
+
+                            var diasUso = (int)tiempoUso.TotalDays;
+                            var horasUso = tiempoUso.Hours;
+
+                            <div class="user-equipo-card">
+                                <div class="user-equipo-header">
+                                <div class="user-equipo-info-left">
+                                    <div class="user-equipo-icon">💻</div>
+                                    <div>
+                                        <div class="user-equipo-codigo">EQ-@equipo.Id.ToString().Substring(0, 8).ToUpper()</div>
+                                    </div>
+                                </div>
+                                    <span class="user-status-badge status-asignado">Asignado</span>
+                                </div>
+
+                                <div class="user-equipo-details">
+                                    <div class="user-equipo-detail-item">
+                                        <span class="detail-icon">📍</span>
+                                        <div class="detail-content">
+                                            <span class="detail-label">Ubicación</span>
+                                            <span class="detail-value">@sala.Numero - @sala.Ubicacion</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="user-equipo-detail-item">
+                                        <span class="detail-icon">📅</span>
+                                        <div class="detail-content">
+                                            <span class="detail-label">Asignado</span>
+                                            <span class="detail-value">@fechaAsignacion.ToString("yyyy-MM-dd HH:mm")</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="user-equipo-detail-item">
+                                        <span class="detail-icon">⏱</span>
+                                        <div class="detail-content">
+                                            <span class="detail-label">Tiempo de uso</span>
+                                            <span class="detail-value">@diasUso días y @horasUso horas</span>
+                                        </div>
+                                    </div>
+
+                                    @if (fechaRetornoEstimada.HasValue)
+                                    {
+                                        <div class="user-equipo-detail-item highlight">
+                                            <span class="detail-icon">🔄</span>
+                                            <div class="detail-content">
+                                                <span class="detail-label">Retorno estimado</span>
+                                                <span class="detail-value">@fechaRetornoEstimada.Value.ToString("yyyy-MM-dd HH:mm")</span>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+
+                                <button type="button" class="user-btn-liberar" data-equipo-id="@equipo.Id" data-equipo-codigo="EQ-@equipo.Id.ToString().Substring(0, 8).ToUpper()">
+                                    Liberar Equipo
+                                </button>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="user-no-data">
+                            <div class="no-data-icon">💻</div>
+                            <div class="no-data-text">No tienes equipos asignados actualmente</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="user-no-data">
+                        <div class="no-data-icon">💻</div>
+                        <div class="no-data-text">No tienes equipos asignados actualmente</div>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <!-- HISTORIAL DE USO -->
+        <section class="user-historial-section">
+            <h2 class="user-section-title">Historial de Uso</h2>
+            <div class="user-historial-list">
+                @if (ViewBag.HistorialUso != null)
+                {
+                    var historialUso = ViewBag.HistorialUso as IEnumerable<dynamic>;
+                    var historialList = historialUso != null ? historialUso.ToList() : new List<dynamic>();
+                    var tieneHistorial = historialList.Any();
+                    
+                    @if (tieneHistorial)
+                    {
+                        @foreach (dynamic item in historialList)
+                        {
+                            var solicitud = (Services.Models.SolicitudModels.SolicitudModel)item.Solicitud;
+                            var equipo = item.Equipo as Services.Models.EquipoModels.EquipoModel;
+                            var sala = item.Sala as Services.Models.SalaModels.SalaModel;
+                            var estaEnUso = (bool)item.EstaEnUso;
+                            var fechaInicio = (DateTime)item.FechaInicio;
+                            var duracion = item.Duracion as TimeSpan?;
+
+                            var estadoClass = estaEnUso ? "status-en-uso" : "status-completado";
+                            var estadoTexto = estaEnUso ? "En uso" : "Completado";
+
+                            string duracionTexto = "En curso";
+                            if (duracion.HasValue)
+                            {
+                                var diasDuracion = (int)duracion.Value.TotalDays;
+                                var horasDuracion = duracion.Value.Hours;
+                                var minutosDuracion = duracion.Value.Minutes;
+                                
+                                if (diasDuracion > 0)
+                                {
+                                    duracionTexto = diasDuracion == 1 ? "1 día" : $"{diasDuracion} días";
+                                    if (horasDuracion > 0)
+                                    {
+                                        duracionTexto += horasDuracion == 1 ? " y 1 hora" : $" y {horasDuracion} horas";
+                                    }
+                                }
+                                else if (horasDuracion > 0)
+                                {
+                                    duracionTexto = horasDuracion == 1 ? "1 hora" : $"{horasDuracion} horas";
+                                    if (minutosDuracion > 0 && horasDuracion < 24)
+                                    {
+                                        duracionTexto += minutosDuracion == 1 ? " y 1 minuto" : $" y {minutosDuracion} minutos";
+                                    }
+                                }
+                                else if (minutosDuracion > 0)
+                                {
+                                    duracionTexto = minutosDuracion == 1 ? "1 minuto" : $"{minutosDuracion} minutos";
+                                }
+                                else
+                                {
+                                    duracionTexto = "Menos de 1 minuto";
+                                }
+                            }
+                            else if (estaEnUso)
+                            {
+                                // Si está en uso pero no hay duración calculada, calcularla
+                                var tiempoTranscurrido = DateTime.UtcNow - fechaInicio;
+                                var diasActuales = (int)tiempoTranscurrido.TotalDays;
+                                var horasActuales = tiempoTranscurrido.Hours;
+                                
+                                if (diasActuales > 0)
+                                {
+                                    duracionTexto = diasActuales == 1 ? "1 día" : $"{diasActuales} días";
+                                    if (horasActuales > 0)
+                                    {
+                                        duracionTexto += horasActuales == 1 ? " y 1 hora" : $" y {horasActuales} horas";
+                                    }
+                                }
+                                else if (horasActuales > 0)
+                                {
+                                    duracionTexto = horasActuales == 1 ? "1 hora" : $"{horasActuales} horas";
+                                }
+                                else
+                                {
+                                    var minutosActuales = tiempoTranscurrido.Minutes;
+                                    duracionTexto = minutosActuales == 1 ? "1 minuto" : $"{minutosActuales} minutos";
+                                }
+                            }
+
+                            <div class="user-historial-item">
+                                <div class="user-historial-header">
+                                    <div class="user-historial-codigo">EQ-@(equipo != null ? equipo.Id.ToString().Substring(0, 8).ToUpper() : solicitud.EquipoCodigo ?? "N/A")</div>
+                                    <span class="user-status-badge @estadoClass">@estadoTexto</span>
+                                </div>
+                                <div class="user-historial-details">
+                                    <div class="historial-detail-row">
+                                        <div class="historial-info-item">
+                                            <span class="historial-icon">🏢</span>
+                                            <span class="historial-label">Sala:</span>
+                                            <span class="historial-value">@sala.Numero</span>
+                                        </div>
+                                    </div>
+                                    <div class="historial-detail-row">
+                                        <div class="historial-info-item">
+                                            <span class="historial-icon">📅</span>
+                                            <span class="historial-label">@fechaInicio.ToString("yyyy-MM-dd")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="user-no-data">
+                            <div class="no-data-icon">📋</div>
+                            <div class="no-data-text">No hay historial de uso disponible</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="user-no-data">
+                        <div class="no-data-icon">📋</div>
+                        <div class="no-data-text">No hay historial de uso disponible</div>
+                    </div>
+                }
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Modal Liberar Equipo -->
+<div id="modalLiberarEquipo" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title">¿Liberar equipo?</h2>
+            <button type="button" class="modal-close" id="closeModalLiberar">✕</button>
+        </div>
+
+        <div id="modalMessageLiberar" class="modal-message" style="display: none;"></div>
+
+        <div class="modal-body">
+            <p class="modal-question" id="modalQuestionLiberar">¿Estás seguro de que quieres liberar el equipo?</p>
+            <div class="modal-info-item">
+                <span class="modal-info-label">Tiempo de uso:</span>
+                <span class="modal-info-value" id="modalTiempoUso"></span>
+            </div>
+            <p class="modal-warning">El equipo estará disponible para otros usuarios inmediatamente.</p>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-cancel" id="btnCancelLiberar">Cancelar</button>
+            <button type="button" class="btn-primary" id="btnConfirmLiberar">Liberar Equipo</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/user-equipos.js" asp-append-version="true"></script>
+}
+
