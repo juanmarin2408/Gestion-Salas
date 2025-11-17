@@ -4,6 +4,7 @@ using Domain.Enums;
 using Infrastructure.Repositories;
 using Services.Models.SolicitudModels;
 using Services.Models.UserModels;
+using Services.Models.CalendarioModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -139,6 +140,61 @@ namespace Services
                 .ToList();
 
             return usuariosUnicos;
+        }
+
+        public async Task<IList<OcupacionModel>> GetOcupacionesPorSemana(DateTime fechaSemana, Guid? salaId = null)
+        {
+            // Obtener el inicio de la semana (lunes) y el final (viernes)
+            var inicioSemana = fechaSemana.Date;
+            var diaSemana = (int)inicioSemana.DayOfWeek;
+            if (diaSemana == 0) diaSemana = 7; // Domingo = 7
+            var lunes = inicioSemana.AddDays(-(diaSemana - 1)); // Lunes
+            var viernes = lunes.AddDays(4); // Viernes
+            var inicioSemanaUtc = new DateTime(lunes.Year, lunes.Month, lunes.Day, 0, 0, 0, DateTimeKind.Utc);
+            var finSemanaUtc = new DateTime(viernes.Year, viernes.Month, viernes.Day, 23, 59, 59, DateTimeKind.Utc);
+
+            // Obtener todas las solicitudes aprobadas
+            var todasSolicitudes = await _solicitudRepository.GetSolicitudes();
+            var solicitudesAprobadas = todasSolicitudes
+                .Where(s => s.Estado == EstadoSolicitud.Aprobada)
+                .Where(s => !salaId.HasValue || s.SalaId == salaId.Value)
+                .ToList();
+
+            var ocupaciones = new List<OcupacionModel>();
+
+            foreach (var solicitud in solicitudesAprobadas)
+            {
+                // Usar FechaAprobacion como fecha de inicio, o FechaSolicitud si no hay aprobación
+                var fechaInicio = solicitud.FechaAprobacion ?? solicitud.FechaSolicitud;
+                
+                // Asegurar que sea UTC
+                if (fechaInicio.Kind != DateTimeKind.Utc)
+                {
+                    fechaInicio = DateTime.SpecifyKind(fechaInicio, DateTimeKind.Utc);
+                }
+
+                // Calcular fecha fin basada en TiempoEstimado (horas)
+                var fechaFin = fechaInicio.AddHours(solicitud.TiempoEstimado);
+
+                // Verificar si la ocupación intersecta con la semana
+                if (fechaFin >= inicioSemanaUtc && fechaInicio <= finSemanaUtc)
+                {
+                    ocupaciones.Add(new OcupacionModel
+                    {
+                        SolicitudId = solicitud.Id,
+                        SalaId = solicitud.SalaId,
+                        SalaNumero = solicitud.Sala.Numero,
+                        UsuarioId = solicitud.UsuarioId,
+                        UsuarioNombre = $"{solicitud.Usuario.Nombre} {solicitud.Usuario.Apellido}".Trim(),
+                        FechaInicio = fechaInicio,
+                        FechaFin = fechaFin,
+                        TiempoEstimado = solicitud.TiempoEstimado,
+                        EsSalaCompleta = !solicitud.EquipoId.HasValue // Si no hay equipo asignado, es sala completa
+                    });
+                }
+            }
+
+            return ocupaciones.OrderBy(o => o.FechaInicio).ToList();
         }
     }
 }

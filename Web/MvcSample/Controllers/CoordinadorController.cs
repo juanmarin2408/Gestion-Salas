@@ -3,7 +3,9 @@ using Services;
 using Domain.Enums;
 using Services.Models.SolicitudModels;
 using Services.Models.EquipoModels;
+using Services.Models.ReporteModels;
 using MvcSample.Filters;
+using System;
 
 namespace MvcSample.Controllers
 {
@@ -159,6 +161,120 @@ namespace MvcSample.Controllers
             {
                 return Json(new { success = false, message = "Ocurrió un error al liberar el equipo." });
             }
+        }
+
+        // GET: Coordinador/Reportes
+        public async Task<IActionResult> Reportes()
+        {
+            var reportes = await _reporteService.GetReportes();
+            
+            ViewBag.SolicitudesPendientes = await _solicitudService.GetSolicitudesPendientesCount();
+            ViewBag.ReportesDanos = await _reporteService.GetReportesPendientesCount();
+            
+            return View(reportes);
+        }
+
+        // POST: Coordinador/AtenderReporte
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AtenderReporte(Guid id, string Observaciones)
+        {
+            try
+            {
+                if (id == Guid.Empty)
+                {
+                    return Json(new { success = false, message = "El ID del reporte es requerido." });
+                }
+
+                if (string.IsNullOrWhiteSpace(Observaciones))
+                {
+                    return Json(new { success = false, message = "La solución aplicada es requerida." });
+                }
+
+                // Obtener el ID del coordinador desde la sesión
+                var coordinadorIdString = HttpContext.Session.GetString("UserId");
+                if (string.IsNullOrEmpty(coordinadorIdString) || !Guid.TryParse(coordinadorIdString, out Guid coordinadorId))
+                {
+                    return Json(new { success = false, message = "No se pudo identificar al coordinador." });
+                }
+
+                await _reporteService.ResolverReporte(id, coordinadorId, Observaciones);
+                return Json(new { success = true, message = "Reporte atendido exitosamente." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Ocurrió un error al atender el reporte: {ex.Message}" });
+            }
+        }
+
+        // GET: Coordinador/Calendario
+        public async Task<IActionResult> Calendario(string fechaSemana, Guid? salaId)
+        {
+            // Parsear la fecha de la semana (lunes)
+            DateTime fechaSemanaLunes;
+            if (string.IsNullOrEmpty(fechaSemana))
+            {
+                // Si no hay fecha, usar la semana actual
+                var hoy = DateTime.UtcNow.Date;
+                var diaSemana = (int)hoy.DayOfWeek;
+                if (diaSemana == 0) diaSemana = 7; // Domingo = 7
+                fechaSemanaLunes = hoy.AddDays(-(diaSemana - 1));
+            }
+            else
+            {
+                // Intentar parsear la fecha (puede venir en formato yyyy-MM-dd)
+                if (!DateTime.TryParse(fechaSemana, out fechaSemanaLunes))
+                {
+                    // Si falla, intentar parsear solo la fecha sin hora
+                    if (DateTime.TryParseExact(fechaSemana, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out fechaSemanaLunes))
+                    {
+                        fechaSemanaLunes = fechaSemanaLunes.Date;
+                    }
+                    else
+                    {
+                        fechaSemanaLunes = DateTime.UtcNow.Date;
+                    }
+                }
+                else
+                {
+                    fechaSemanaLunes = fechaSemanaLunes.Date;
+                }
+                
+                // Asegurar que sea UTC
+                if (fechaSemanaLunes.Kind != DateTimeKind.Utc)
+                {
+                    fechaSemanaLunes = DateTime.SpecifyKind(fechaSemanaLunes, DateTimeKind.Utc);
+                }
+                
+                // Asegurar que sea el lunes de esa semana
+                var diaSemana = (int)fechaSemanaLunes.DayOfWeek;
+                if (diaSemana == 0) diaSemana = 7;
+                fechaSemanaLunes = fechaSemanaLunes.AddDays(-(diaSemana - 1)).Date;
+            }
+
+            // Obtener todas las salas para el filtro
+            var salas = await _salaService.GetSalas();
+            
+            // Si no hay sala seleccionada, usar la primera sala disponible
+            if (!salaId.HasValue && salas.Any())
+            {
+                salaId = salas.First().Id;
+            }
+            
+            // Obtener ocupaciones para la semana
+            var ocupaciones = await _solicitudService.GetOcupacionesPorSemana(fechaSemanaLunes, salaId);
+            
+            ViewBag.SolicitudesPendientes = await _solicitudService.GetSolicitudesPendientesCount();
+            ViewBag.ReportesDanos = await _reporteService.GetReportesPendientesCount();
+            ViewBag.Salas = salas;
+            ViewBag.FechaSemana = fechaSemanaLunes;
+            ViewBag.SalaFiltro = salaId;
+
+            return View(ocupaciones);
         }
     }
 }

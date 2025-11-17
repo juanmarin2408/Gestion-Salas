@@ -1,5 +1,6 @@
 using Services.Models.SolicitudModels;
 using Services.Models.UserModels;
+using Services.Models.CalendarioModels;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ namespace Services
         Task<int> GetSolicitudesPendientesCount();
         Task<int> GetSolicitudesUrgentesCount();
         Task<IList<UserModel>> GetUsuariosConSolicitudes();
+        Task<IList<OcupacionModel>> GetOcupacionesPorSemana(DateTime fechaSemana, Guid? salaId = null);
     }
 }
 

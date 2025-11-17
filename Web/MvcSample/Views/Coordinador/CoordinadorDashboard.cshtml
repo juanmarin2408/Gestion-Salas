@@ -123,22 +123,18 @@
             <span class="admin-tab-icon">💻</span>
             <span>Equipos</span>
         </a>
-        <button class="admin-tab">
+        <a asp-controller="Coordinador" asp-action="Reportes" class="admin-tab">
             <span class="admin-tab-icon">📄</span>
             <span>Reportes</span>
             @if ((ViewBag.ReportesDanos ?? 0) > 0)
             {
                 <span class="tab-badge">@(ViewBag.ReportesDanos)</span>
             }
-        </button>
-        <button class="admin-tab">
+        </a>
+        <a asp-controller="Coordinador" asp-action="Calendario" class="admin-tab">
             <span class="admin-tab-icon">📅</span>
             <span>Calendario</span>
-        </button>
-        <button class="admin-tab">
-            <span class="admin-tab-icon">📈</span>
-            <span>Estadísticas</span>
-        </button>
+        </a>
     </div>
 
     <!-- CONTENIDO PRINCIPAL -->

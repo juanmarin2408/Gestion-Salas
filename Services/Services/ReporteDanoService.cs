@@ -100,6 +100,27 @@ namespace Services
             var reportes = await _reporteRepository.GetReportesByEstado(EstadoReporte.Pendiente);
             return reportes.Count;
         }
+
+        public async Task ResolverReporte(Guid reporteId, Guid resueltoPorId, string observaciones)
+        {
+            var reporte = await _reporteRepository.GetReporte(reporteId);
+            if (reporte == null)
+            {
+                throw new InvalidOperationException("Reporte no encontrado.");
+            }
+
+            if (reporte.Estado == EstadoReporte.Resuelto || reporte.Estado == EstadoReporte.Rechazado)
+            {
+                throw new InvalidOperationException("El reporte ya ha sido resuelto o rechazado.");
+            }
+
+            reporte.Estado = EstadoReporte.Resuelto;
+            reporte.FechaResolucion = DateTime.UtcNow;
+            reporte.ResueltoPorId = resueltoPorId;
+            reporte.Observaciones = observaciones;
+
+            await _reporteRepository.Update(reporte);
+        }
     }
 }
 

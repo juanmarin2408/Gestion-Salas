@@ -10,6 +10,7 @@ namespace Services
         Task<Services.Models.ReporteModels.ReporteModel?> GetReporte(Guid id);
         Task<IList<Services.Models.ReporteModels.ReporteModel>> GetReportesByEstado(Domain.Enums.EstadoReporte estado);
         Task<int> GetReportesPendientesCount();
+        Task ResolverReporte(Guid reporteId, Guid resueltoPorId, string observaciones);
     }
 }
 
