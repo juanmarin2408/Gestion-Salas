@@ -70,10 +70,14 @@
             <span class="user-tab-icon">⚠</span>
             <span>Reportes</span>
         </a>
-        <button class="user-tab">
+        <a asp-controller="User" asp-action="Asesorias" class="user-tab">
             <span class="user-tab-icon">❓</span>
             <span>Asesoría</span>
-        </button>
+            @if ((ViewBag.AsesoriasPendientes ?? 0) > 0)
+            {
+                <span class="user-tab-badge">@(ViewBag.AsesoriasPendientes)</span>
+            }
+        </a>
     </div>
 
     <!-- CONTENIDO PRINCIPAL -->

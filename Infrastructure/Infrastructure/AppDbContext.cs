@@ -14,5 +14,6 @@ namespace Infrastructure
         public DbSet<Equipo> Equipos { get; set; }
         public DbSet<SolicitudPrestamo> SolicitudesPrestamo { get; set; }
         public DbSet<ReporteDano> ReportesDanos { get; set; }
+        public DbSet<Asesoria> Asesorias { get; set; }
     }
 }

@@ -17,6 +17,7 @@ namespace Infrastructure
             services.AddScoped<IEquipoRepository, EquipoRepository>();
             services.AddScoped<ISolicitudPrestamoRepository, SolicitudPrestamoRepository>();
             services.AddScoped<IReporteDanoRepository, ReporteDanoRepository>();
+            services.AddScoped<IAsesoriaRepository, AsesoriaRepository>();
 
             services.AddDbContext<AppDbContext>(options =>
             {

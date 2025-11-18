@@ -14,6 +14,7 @@ namespace Services
             services.AddScoped<IEquipoService, EquipoService>();
             services.AddScoped<ISolicitudPrestamoService, SolicitudPrestamoService>();
             services.AddScoped<IReporteDanoService, ReporteDanoService>();
+            services.AddScoped<IAsesoriaService, AsesoriaService>();
 
             // Hasher para contraseñas de Usuario
             services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();

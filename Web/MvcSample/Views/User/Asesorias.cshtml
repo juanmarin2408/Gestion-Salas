@@ -1,0 +1,308 @@
+@{
+    ViewData["Title"] = "Solicitudes de Asesoría Técnica";
+    ViewBag.HideFooter = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-asesorias.css" asp-append-version="true" />
+}
+
+<div class="user-page">
+    <!-- HEADER -->
+    <header class="user-header">
+        <div class="user-header-left">
+            <div class="user-logo-icon">
+                <span class="material-icon">▤</span>
+            </div>
+            <div class="user-logo-text">
+                <div class="user-app-name">Sistema de Salas</div>
+                <div class="user-app-subtitle">Universidad Santiago de Cali</div>
+            </div>
+        </div>
+
+        <div class="user-header-right">
+            <form asp-controller="Home" asp-action="Logout" method="post" style="display: inline;">
+                <button type="submit" class="user-logout" style="border: none; background: none; cursor: pointer; padding: 0;">
+                    <span class="user-logout-icon">⟲</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+
+            <div class="user-user-card">
+                <div class="user-user-avatar">@(Context.Session.GetString("Nombre")?.Substring(0, 1).ToUpper() ?? "U")@(Context.Session.GetString("Apellido")?.Substring(0, 1).ToUpper() ?? "S")</div>
+                <div class="user-user-text">
+                    <div class="user-user-name">@(Context.Session.GetString("Nombre") ?? "Usuario") @(Context.Session.GetString("Apellido") ?? "")</div>
+                    <div class="user-user-role">Usuario</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="user-tabs">
+        <a asp-controller="User" asp-action="Index" class="user-tab">
+            <span class="user-tab-icon">🏠</span>
+            <span>Inicio</span>
+        </a>
+        <a asp-controller="User" asp-action="Salas" class="user-tab">
+            <span class="user-tab-icon">🏢</span>
+            <span>Salas</span>
+        </a>
+        <a asp-controller="User" asp-action="Equipos" class="user-tab">
+            <span class="user-tab-icon">💻</span>
+            <span>Mis Equipos</span>
+        </a>
+        <a asp-controller="User" asp-action="Solicitudes" class="user-tab">
+            <span class="user-tab-icon">📋</span>
+            <span>Solicitudes</span>
+        </a>
+        <a asp-controller="User" asp-action="Reportes" class="user-tab">
+            <span class="user-tab-icon">⚠</span>
+            <span>Reportes</span>
+        </a>
+        <a asp-controller="User" asp-action="Asesorias" class="user-tab active">
+            <span class="user-tab-icon">❓</span>
+            <span>Asesoría</span>
+            @if ((ViewBag.Pendientes ?? 0) > 0)
+            {
+                <span class="user-tab-badge">@(ViewBag.Pendientes)</span>
+            }
+        </a>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="user-main">
+        <div class="asesorias-header">
+            <h1 class="asesorias-title">Solicitudes de Asesoría Técnica</h1>
+            <div class="asesorias-actions">
+                <div class="asesorias-filter">
+                    <select id="filterEstado" class="filter-select">
+                        @if (ViewBag.EstadoFiltro == "Todos")
+                        {
+                            <option value="Todos" selected>Todos los estados</option>
+                        }
+                        else
+                        {
+                            <option value="Todos">Todos los estados</option>
+                        }
+                        @if (ViewBag.EstadoFiltro == "Pendientes")
+                        {
+                            <option value="Pendientes" selected>Pendientes</option>
+                        }
+                        else
+                        {
+                            <option value="Pendientes">Pendientes</option>
+                        }
+                        @if (ViewBag.EstadoFiltro == "EnProceso")
+                        {
+                            <option value="EnProceso" selected>En Proceso</option>
+                        }
+                        else
+                        {
+                            <option value="EnProceso">En Proceso</option>
+                        }
+                        @if (ViewBag.EstadoFiltro == "Resueltos")
+                        {
+                            <option value="Resueltos" selected>Resueltos</option>
+                        }
+                        else
+                        {
+                            <option value="Resueltos">Resueltos</option>
+                        }
+                        @if (ViewBag.EstadoFiltro == "Rechazados")
+                        {
+                            <option value="Rechazados" selected>Rechazados</option>
+                        }
+                        else
+                        {
+                            <option value="Rechazados">Rechazados</option>
+                        }
+                    </select>
+                </div>
+                <button type="button" class="btn-nuevo-asesoria" id="btnNuevoAsesoria">
+                    <span class="icon">+</span>
+                    Nueva Solicitud
+                </button>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="asesorias-stats">
+            <div class="stat-card">
+                <div class="stat-number">@(ViewBag.Pendientes ?? 0)</div>
+                <div class="stat-label">Pendientes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">@(ViewBag.EnProceso ?? 0)</div>
+                <div class="stat-label">En Proceso</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">@(ViewBag.Resueltos ?? 0)</div>
+                <div class="stat-label">Resueltos</div>
+            </div>
+        </div>
+
+        <!-- Lista de Asesorías -->
+        <div class="asesorias-list">
+            @if (ViewBag.AsesoriasUsuario != null)
+            {
+                var asesorias = ViewBag.AsesoriasUsuario as IEnumerable<Services.Models.AsesoriaModels.AsesoriaModel>;
+                if (asesorias != null && asesorias.Any())
+                {
+                    @foreach (var asesoria in asesorias)
+                    {
+                        string estadoClass = "";
+                        string estadoTexto = "";
+                        string prioridadClass = "";
+                        string prioridadTexto = "";
+                        string mensajeEstado = "";
+                        string iconoEstado = "";
+
+                        switch (asesoria.Estado)
+                        {
+                            case Domain.Enums.EstadoAsesoria.Pendiente:
+                                estadoClass = "status-pendiente";
+                                estadoTexto = "Pendiente";
+                                mensajeEstado = "Tu solicitud está en cola. Pronto recibirás una respuesta.";
+                                iconoEstado = "⏳";
+                                break;
+                            case Domain.Enums.EstadoAsesoria.EnProceso:
+                                estadoClass = "status-en-proceso";
+                                estadoTexto = "En Proceso";
+                                mensajeEstado = "El coordinador está trabajando en tu solicitud.";
+                                iconoEstado = "👨‍💻";
+                                break;
+                            case Domain.Enums.EstadoAsesoria.Resuelto:
+                                estadoClass = "status-resuelto";
+                                estadoTexto = "Resuelto";
+                                mensajeEstado = asesoria.Observaciones ?? "Tu solicitud ha sido resuelta.";
+                                iconoEstado = "✅";
+                                break;
+                            case Domain.Enums.EstadoAsesoria.Rechazado:
+                                estadoClass = "status-rechazado";
+                                estadoTexto = "Rechazado";
+                                mensajeEstado = asesoria.MotivoRechazo ?? "Tu solicitud ha sido rechazada.";
+                                iconoEstado = "❌";
+                                break;
+                        }
+
+                        switch (asesoria.Prioridad)
+                        {
+                            case Domain.Enums.PrioridadReporte.Baja:
+                                prioridadClass = "prioridad-baja";
+                                prioridadTexto = "Baja";
+                                break;
+                            case Domain.Enums.PrioridadReporte.Media:
+                                prioridadClass = "prioridad-media";
+                                prioridadTexto = "Media";
+                                break;
+                            case Domain.Enums.PrioridadReporte.Alta:
+                                prioridadClass = "prioridad-alta";
+                                prioridadTexto = "Alta";
+                                break;
+                            case Domain.Enums.PrioridadReporte.Urgente:
+                                prioridadClass = "prioridad-urgente";
+                                prioridadTexto = "Urgente";
+                                break;
+                        }
+
+                        <div class="asesoria-card">
+                            <div class="asesoria-header">
+                                <div class="asesoria-info">
+                                    <div class="asesoria-icon">❓</div>
+                                    <div>
+                                        <div class="asesoria-titulo">Ticket #@asesoria.NumeroTicket</div>
+                                        <div class="asesoria-fecha">@asesoria.FechaSolicitud.ToString("yyyy-MM-dd HH:mm")</div>
+                                    </div>
+                                </div>
+                                <div class="asesoria-tags">
+                                    <span class="tag @prioridadClass">@prioridadTexto</span>
+                                    <span class="tag @estadoClass">@estadoTexto</span>
+                                </div>
+                            </div>
+                            <div class="asesoria-content">
+                                <div class="asesoria-consulta">
+                                    <strong>Tu consulta</strong>
+                                    <p>@asesoria.Descripcion</p>
+                                </div>
+                                @if (asesoria.Estado == Domain.Enums.EstadoAsesoria.Resuelto && !string.IsNullOrEmpty(asesoria.Observaciones))
+                                {
+                                    <div class="asesoria-solucion">
+                                        <strong>Solución aplicada:</strong>
+                                        <p>@asesoria.Observaciones</p>
+                                    </div>
+                                }
+                                <div class="asesoria-mensaje @estadoClass">
+                                    <span class="mensaje-icon">@iconoEstado</span>
+                                    <span>@mensajeEstado</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="user-no-data">
+                        <div class="no-data-icon">❓</div>
+                        <div class="no-data-text">No hay solicitudes de asesoría para mostrar con el filtro actual.</div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="user-no-data">
+                    <div class="no-data-icon">❓</div>
+                    <div class="no-data-text">No hay solicitudes de asesoría para mostrar.</div>
+                </div>
+            }
+        </div>
+    </main>
+</div>
+
+<!-- Modal Nueva Asesoría -->
+<div id="modalNuevoAsesoria" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Solicitar Asesoría Técnica</h2>
+            <button type="button" class="modal-close" id="closeModalAsesoria">&times;</button>
+        </div>
+        <div id="modalMessageAsesoria" class="modal-message" style="display: none;"></div>
+        <form id="formNuevoAsesoria" class="modal-form">
+            @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <p class="modal-subtitle">Describe el problema o pregunta que necesitas resolver</p>
+                
+                <div class="form-field">
+                    <label for="Descripcion">Descripción del Problema *</label>
+                    <textarea id="Descripcion" name="Descripcion" class="form-textarea" rows="4" placeholder="Describe detalladamente el problema o pregunta..." required maxlength="1000"></textarea>
+                    <span class="field-error"></span>
+                </div>
+
+                <div class="form-field">
+                    <label for="Prioridad">Prioridad</label>
+                    <select id="Prioridad" name="Prioridad" class="form-select">
+                        <option value="Baja">Baja - Consulta general</option>
+                        <option value="Media" selected>Media - Necesito ayuda pronto</option>
+                        <option value="Alta">Alta - Urgente</option>
+                    </select>
+                    <span class="field-error"></span>
+                </div>
+
+                <div class="modal-info">
+                    El coordinador técnico revisará tu solicitud y te proporcionará ayuda lo antes posible.
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="btnCancelAsesoria">Cancelar</button>
+                <button type="submit" class="btn-primary" id="btnEnviarAsesoria">Enviar Solicitud</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/user-asesorias.js" asp-append-version="true"></script>
+}
+

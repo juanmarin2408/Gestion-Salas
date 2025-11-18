@@ -17,19 +17,22 @@ namespace MvcSample.Controllers
         private readonly ISolicitudPrestamoService _solicitudService;
         private readonly IReporteDanoService _reporteService;
         private readonly IUserService _userService;
+        private readonly IAsesoriaService _asesoriaService;
 
         public CoordinadorController(
             ISalaService salaService, 
             IEquipoService equipoService,
             ISolicitudPrestamoService solicitudService,
             IReporteDanoService reporteService,
-            IUserService userService)
+            IUserService userService,
+            IAsesoriaService asesoriaService)
         {
             _salaService = salaService;
             _equipoService = equipoService;
             _solicitudService = solicitudService;
             _reporteService = reporteService;
             _userService = userService;
+            _asesoriaService = asesoriaService;
         }
 
         // GET: Coordinador/Dashboard
@@ -43,6 +46,7 @@ namespace MvcSample.Controllers
             ViewBag.SolicitudesUrgentes = await _solicitudService.GetSolicitudesUrgentesCount();
             ViewBag.EquiposBloqueados = equipos.Count(e => e.Estado == EstadoEquipo.EnMantenimiento || e.Estado == EstadoEquipo.Dañado);
             ViewBag.ReportesDanos = await _reporteService.GetReportesPendientesCount();
+            ViewBag.AsesoriasPendientes = await _asesoriaService.GetAsesoriasPendientesCount();
             ViewBag.EquiposDisponibles = equipos.Count(e => e.Estado == EstadoEquipo.Disponible);
             ViewBag.Salas = salas;
             ViewBag.Equipos = equipos;
@@ -60,6 +64,7 @@ namespace MvcSample.Controllers
             var solicitudes = await _solicitudService.GetSolicitudes();
             ViewBag.SolicitudesPendientes = await _solicitudService.GetSolicitudesPendientesCount();
             ViewBag.ReportesDanos = await _reporteService.GetReportesPendientesCount();
+            ViewBag.AsesoriasPendientes = await _asesoriaService.GetAsesoriasPendientesCount();
             
             return View(solicitudes);
         }
@@ -134,6 +139,7 @@ namespace MvcSample.Controllers
             
             ViewBag.SolicitudesPendientes = await _solicitudService.GetSolicitudesPendientesCount();
             ViewBag.ReportesDanos = await _reporteService.GetReportesPendientesCount();
+            ViewBag.AsesoriasPendientes = await _asesoriaService.GetAsesoriasPendientesCount();
             ViewBag.Usuarios = usuarios;
             
             return View(equipos);
@@ -217,6 +223,7 @@ namespace MvcSample.Controllers
             
             ViewBag.SolicitudesPendientes = await _solicitudService.GetSolicitudesPendientesCount();
             ViewBag.ReportesDanos = await _reporteService.GetReportesPendientesCount();
+            ViewBag.AsesoriasPendientes = await _asesoriaService.GetAsesoriasPendientesCount();
             
             return View(reportes);
         }
@@ -258,6 +265,126 @@ namespace MvcSample.Controllers
             }
         }
 
+        // GET: Coordinador/Asesorias
+        public async Task<IActionResult> Asesorias(string estado = null)
+        {
+            var asesorias = await _asesoriaService.GetAsesorias();
+
+            // Aplicar filtro por estado si se especifica
+            if (!string.IsNullOrEmpty(estado) && estado != "Todos")
+            {
+                var estadoEnum = estado switch
+                {
+                    "Pendientes" => EstadoAsesoria.Pendiente,
+                    "EnProceso" => EstadoAsesoria.EnProceso,
+                    "Resueltos" => EstadoAsesoria.Resuelto,
+                    "Rechazados" => EstadoAsesoria.Rechazado,
+                    _ => (EstadoAsesoria?)null
+                };
+
+                if (estadoEnum.HasValue)
+                {
+                    asesorias = asesorias.Where(a => a.Estado == estadoEnum.Value).ToList();
+                }
+            }
+
+            // Estadísticas
+            ViewBag.Pendientes = await _asesoriaService.GetAsesoriasPendientesCount();
+            ViewBag.EnProceso = await _asesoriaService.GetAsesoriasEnProcesoCount();
+            ViewBag.Resueltos = await _asesoriaService.GetAsesoriasResueltasCount();
+
+            ViewBag.Asesorias = asesorias;
+            ViewBag.EstadoFiltro = estado ?? "Todos";
+
+            return View();
+        }
+
+        // POST: Coordinador/AceptarAsesoria
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AceptarAsesoria(Guid id)
+        {
+            var coordinadorIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(coordinadorIdString) || !Guid.TryParse(coordinadorIdString, out var coordinadorId))
+            {
+                return Json(new { success = false, message = "Usuario no autenticado." });
+            }
+
+            try
+            {
+                await _asesoriaService.AceptarAsesoria(id, coordinadorId);
+                return Json(new { success = true, message = "Asesoría aceptada exitosamente. Ahora está en proceso." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Ocurrió un error al aceptar la asesoría: " + ex.Message });
+            }
+        }
+
+        // POST: Coordinador/RechazarAsesoria
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RechazarAsesoria(Guid id, string MotivoRechazo)
+        {
+            var coordinadorIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(coordinadorIdString) || !Guid.TryParse(coordinadorIdString, out var coordinadorId))
+            {
+                return Json(new { success = false, message = "Usuario no autenticado." });
+            }
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(MotivoRechazo))
+                {
+                    return Json(new { success = false, message = "El motivo del rechazo es obligatorio." });
+                }
+
+                await _asesoriaService.RechazarAsesoria(id, coordinadorId, MotivoRechazo);
+                return Json(new { success = true, message = "Asesoría rechazada exitosamente." });
+            }
+            catch (ArgumentException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Ocurrió un error al rechazar la asesoría: " + ex.Message });
+            }
+        }
+
+        // POST: Coordinador/ResolverAsesoria
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResolverAsesoria(Guid id, string Observaciones)
+        {
+            var coordinadorIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(coordinadorIdString) || !Guid.TryParse(coordinadorIdString, out var coordinadorId))
+            {
+                return Json(new { success = false, message = "Usuario no autenticado." });
+            }
+
+            try
+            {
+                await _asesoriaService.ResolverAsesoria(id, coordinadorId, Observaciones);
+                return Json(new { success = true, message = "Asesoría marcada como completada exitosamente." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Ocurrió un error al resolver la asesoría: " + ex.Message });
+            }
+        }
     }
 }
 

@@ -1,0 +1,518 @@
+/* Header de Asesorías */
+.asesorias-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.asesorias-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.asesorias-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.asesorias-filter .filter-select {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    background-color: #ffffff;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236B7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-6.5%200-12.1%203.2-15.6%208.1-3.6%204.9-3.6%2011.4%200%2016.3l128%20128c3.6%204.9%2010.1%204.9%2013.6%200l128-128c3.5-4.9%203.5-11.4%200-16.3z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 12px top 50%;
+    background-size: 12px auto;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-nuevo-asesoria {
+    background: linear-gradient(135deg, #1f2937, #111827);
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-nuevo-asesoria:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.3);
+}
+
+.btn-nuevo-asesoria .icon {
+    font-size: 18px;
+}
+
+/* Estadísticas */
+.asesorias-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px 24px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+/* Lista de Asesorías */
+.asesorias-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.asesoria-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 20px 24px;
+    box-shadow: 0 18px 35px rgba(15, 23, 42, 0.12);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #f3f4f6;
+}
+
+.asesoria-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 24px 40px rgba(15, 23, 42, 0.16);
+    border-color: #e5e7eb;
+}
+
+.asesoria-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f3f4f6;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.asesoria-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.asesoria-icon {
+    font-size: 32px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eff6ff;
+    border-radius: 12px;
+}
+
+.asesoria-titulo {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.asesoria-fecha {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.asesoria-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tag {
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.prioridad-baja {
+    background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+    color: #4b5563;
+}
+
+.prioridad-media {
+    background: linear-gradient(135deg, #1f2937, #111827);
+    color: #ffffff;
+}
+
+.prioridad-alta {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #ffffff;
+}
+
+.status-pendiente {
+    background: linear-gradient(135deg, #fcd34d, #fbbf24);
+    color: #78350f;
+}
+
+.status-en-proceso {
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    color: #ffffff;
+}
+
+.status-resuelto {
+    background: linear-gradient(135deg, #34d399, #10b981);
+    color: #ffffff;
+}
+
+.status-rechazado {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #ffffff;
+}
+
+.asesoria-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.asesoria-consulta {
+    margin-bottom: 12px;
+}
+
+.asesoria-consulta strong {
+    font-size: 14px;
+    color: #374151;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.asesoria-consulta p {
+    font-size: 14px;
+    color: #4b5563;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.asesoria-solucion {
+    background: #ecfdf5;
+    border-left: 4px solid #10b981;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 12px;
+}
+
+.asesoria-solucion strong {
+    font-size: 13px;
+    color: #065f46;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.asesoria-solucion p {
+    font-size: 13px;
+    color: #065f46;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.asesoria-mensaje {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 12px;
+}
+
+.asesoria-mensaje.status-pendiente {
+    background: #fef3c7;
+    color: #78350f;
+}
+
+.asesoria-mensaje.status-en-proceso {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.asesoria-mensaje.status-resuelto {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.asesoria-mensaje.status-rechazado {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.mensaje-icon {
+    font-size: 18px;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 28px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.modal-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.modal-close:hover {
+    background: #f3f4f6;
+    color: #0f172a;
+}
+
+.modal-message {
+    padding: 12px 28px;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 0;
+}
+
+.modal-body {
+    padding: 28px;
+}
+
+.modal-subtitle {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 20px;
+}
+
+.modal-info {
+    background: #f9fafb;
+    border-left: 4px solid #3b82f6;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #4b5563;
+    margin-top: 16px;
+}
+
+.form-field {
+    margin-bottom: 20px;
+}
+
+.form-field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.form-textarea,
+.form-select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #0f172a;
+    background: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    font-family: inherit;
+}
+
+.form-textarea:focus,
+.form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.field-error {
+    display: block;
+    font-size: 12px;
+    color: #dc2626;
+    margin-top: 4px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 28px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.btn-cancel {
+    background: #ffffff;
+    color: #374151;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 2px solid #e5e7eb;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-cancel:hover {
+    background: #f9fafb;
+    border-color: #d1d5db;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .asesorias-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .asesorias-actions {
+        width: 100%;
+    }
+
+    .asesorias-filter {
+        width: 100%;
+    }
+
+    .asesorias-filter .filter-select {
+        width: 100%;
+    }
+
+    .asesorias-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .asesoria-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+}
+

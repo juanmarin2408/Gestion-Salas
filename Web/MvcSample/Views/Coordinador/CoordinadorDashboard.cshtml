@@ -65,6 +65,14 @@
                 <span class="tab-badge">@(ViewBag.ReportesDanos)</span>
             }
         </a>
+        <a asp-controller="Coordinador" asp-action="Asesorias" class="admin-tab">
+            <span class="admin-tab-icon">❓</span>
+            <span>Asesorías</span>
+            @if ((ViewBag.AsesoriasPendientes ?? 0) > 0)
+            {
+                <span class="tab-badge">@(ViewBag.AsesoriasPendientes)</span>
+            }
+        </a>
     </div>
 
     <!-- CONTENIDO PRINCIPAL -->

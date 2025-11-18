@@ -57,4 +57,12 @@ namespace Domain.Enums
         Sala = 1
     }
 
+    public enum EstadoAsesoria
+    {
+        Pendiente = 0,
+        EnProceso = 1,
+        Resuelto = 2,
+        Rechazado = 3
+    }
+
 }

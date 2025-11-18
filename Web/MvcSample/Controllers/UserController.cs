@@ -14,17 +14,20 @@ namespace MvcSample.Controllers
         private readonly IEquipoService _equipoService;
         private readonly ISolicitudPrestamoService _solicitudService;
         private readonly IReporteDanoService _reporteService;
+        private readonly IAsesoriaService _asesoriaService;
 
         public UserController(
             ISalaService salaService,
             IEquipoService equipoService,
             ISolicitudPrestamoService solicitudService,
-            IReporteDanoService reporteService)
+            IReporteDanoService reporteService,
+            IAsesoriaService asesoriaService)
         {
             _salaService = salaService;
             _equipoService = equipoService;
             _solicitudService = solicitudService;
             _reporteService = reporteService;
+            _asesoriaService = asesoriaService;
         }
 
         // GET: User/Index (Dashboard)
@@ -41,6 +44,7 @@ namespace MvcSample.Controllers
             var solicitudes = await _solicitudService.GetSolicitudes();
             var reportes = await _reporteService.GetReportes();
             var salas = await _salaService.GetSalas();
+            var asesorias = await _asesoriaService.GetAsesoriasByUsuarioId(userId);
 
             // Filtrar por usuario actual
             var equiposAsignados = equipos.Where(e => e.AsignadoAId == userId && e.Estado == EstadoEquipo.Asignado).ToList();
@@ -53,6 +57,7 @@ namespace MvcSample.Controllers
             ViewBag.SolicitudesPendientes = solicitudesUsuario.Count(s => s.Estado == EstadoSolicitud.Pendiente);
             ViewBag.ReportesActivos = reportesUsuario.Count(r => r.Estado == EstadoReporte.Pendiente || r.Estado == EstadoReporte.EnRevision);
             ViewBag.SolicitudesAprobadas = solicitudesUsuario.Count(s => s.Estado == EstadoSolicitud.Aprobada);
+            ViewBag.AsesoriasPendientes = asesorias.Count(a => a.Estado == EstadoAsesoria.Pendiente);
 
             // Datos para las secciones
             ViewBag.EquiposAsignadosList = equiposAsignados;
@@ -129,8 +134,10 @@ namespace MvcSample.Controllers
 
             // Calcular estadísticas para los badges
             var equiposAsignados = equipos.Where(e => e.AsignadoAId == userId && e.Estado == EstadoEquipo.Asignado).ToList();
+            var asesorias = await _asesoriaService.GetAsesoriasByUsuarioId(userId);
             ViewBag.EquiposAsignadosCount = equiposAsignados.Count;
             ViewBag.SolicitudesPendientes = solicitudes.Count(s => s.UsuarioId == userId && s.Estado == EstadoSolicitud.Pendiente);
+            ViewBag.AsesoriasPendientes = asesorias.Count(a => a.Estado == EstadoAsesoria.Pendiente);
 
             ViewBag.SalasConInfo = salasConInfo;
             ViewBag.Equipos = equipos;
@@ -299,10 +306,12 @@ namespace MvcSample.Controllers
                 };
             }).ToList();
 
+            var asesorias = await _asesoriaService.GetAsesoriasByUsuarioId(userId);
             ViewBag.EquiposAsignados = equiposConInfo;
             ViewBag.HistorialUso = historialUso;
             ViewBag.EquiposAsignadosCount = equiposAsignados.Count;
             ViewBag.SolicitudesPendientes = solicitudes.Count(s => s.UsuarioId == userId && s.Estado == EstadoSolicitud.Pendiente);
+            ViewBag.AsesoriasPendientes = asesorias.Count(a => a.Estado == EstadoAsesoria.Pendiente);
 
             return View();
         }
@@ -345,8 +354,10 @@ namespace MvcSample.Controllers
 
             // Calcular estadísticas para los badges
             var equiposAsignados = equipos.Where(e => e.AsignadoAId == userId && e.Estado == EstadoEquipo.Asignado).ToList();
+            var asesorias = await _asesoriaService.GetAsesoriasByUsuarioId(userId);
             ViewBag.EquiposAsignadosCount = equiposAsignados.Count;
             ViewBag.SolicitudesPendientes = solicitudes.Count(s => s.UsuarioId == userId && s.Estado == EstadoSolicitud.Pendiente);
+            ViewBag.AsesoriasPendientes = asesorias.Count(a => a.Estado == EstadoAsesoria.Pendiente);
 
             ViewBag.SolicitudesUsuario = solicitudesUsuario;
             ViewBag.EstadoFiltro = estado ?? "Todos";
@@ -420,8 +431,10 @@ namespace MvcSample.Controllers
 
             // Calcular estadísticas
             var equiposAsignados = equipos.Where(e => e.AsignadoAId == userId && e.Estado == EstadoEquipo.Asignado).ToList();
+            var asesorias = await _asesoriaService.GetAsesoriasByUsuarioId(userId);
             ViewBag.EquiposAsignadosCount = equiposAsignados.Count;
             ViewBag.SolicitudesPendientes = solicitudes.Count(s => s.UsuarioId == userId && s.Estado == EstadoSolicitud.Pendiente);
+            ViewBag.AsesoriasPendientes = asesorias.Count(a => a.Estado == EstadoAsesoria.Pendiente);
             ViewBag.TotalReportes = reportesUsuario.Count;
             ViewBag.ReportesPendientes = reportesUsuario.Count(r => r.Estado == EstadoReporte.Pendiente || r.Estado == EstadoReporte.EnRevision);
             ViewBag.ReportesResueltos = reportesUsuario.Count(r => r.Estado == EstadoReporte.Resuelto);
@@ -521,6 +534,98 @@ namespace MvcSample.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Ocurrió un error al crear el reporte: " + ex.Message });
+            }
+        }
+
+        // GET: User/Asesorias
+        public async Task<IActionResult> Asesorias(string estado = null)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var asesorias = await _asesoriaService.GetAsesoriasByUsuarioId(userId);
+
+            // Aplicar filtro por estado si se especifica
+            if (!string.IsNullOrEmpty(estado) && estado != "Todos")
+            {
+                var estadoEnum = estado switch
+                {
+                    "Pendientes" => EstadoAsesoria.Pendiente,
+                    "EnProceso" => EstadoAsesoria.EnProceso,
+                    "Resueltos" => EstadoAsesoria.Resuelto,
+                    "Rechazados" => EstadoAsesoria.Rechazado,
+                    _ => (EstadoAsesoria?)null
+                };
+
+                if (estadoEnum.HasValue)
+                {
+                    asesorias = asesorias.Where(a => a.Estado == estadoEnum.Value).ToList();
+                }
+            }
+
+            // Estadísticas
+            var todasAsesorias = await _asesoriaService.GetAsesoriasByUsuarioId(userId);
+            ViewBag.Pendientes = todasAsesorias.Count(a => a.Estado == EstadoAsesoria.Pendiente);
+            ViewBag.EnProceso = todasAsesorias.Count(a => a.Estado == EstadoAsesoria.EnProceso);
+            ViewBag.Resueltos = todasAsesorias.Count(a => a.Estado == EstadoAsesoria.Resuelto);
+
+            ViewBag.AsesoriasUsuario = asesorias;
+            ViewBag.EstadoFiltro = estado ?? "Todos";
+
+            return View();
+        }
+
+        // POST: User/CrearAsesoria
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CrearAsesoria(string Descripcion, string Prioridad)
+        {
+            var userIdString = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
+            {
+                return Json(new { success = false, message = "Usuario no autenticado." });
+            }
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(Descripcion))
+                {
+                    return Json(new { success = false, message = "La descripción del problema es obligatoria." });
+                }
+
+                if (Descripcion.Length > 1000)
+                {
+                    return Json(new { success = false, message = "La descripción no puede exceder 1000 caracteres." });
+                }
+
+                var prioridadEnum = Prioridad switch
+                {
+                    "Baja" => PrioridadReporte.Baja,
+                    "Media" => PrioridadReporte.Media,
+                    "Alta" => PrioridadReporte.Alta,
+                    _ => PrioridadReporte.Media
+                };
+
+                var addModel = new Services.Models.AsesoriaModels.AddAsesoriaModel
+                {
+                    UsuarioId = userId,
+                    Descripcion = Descripcion.Trim(),
+                    Prioridad = prioridadEnum
+                };
+
+                await _asesoriaService.Create(addModel);
+                return Json(new { success = true, message = "Solicitud de asesoría creada exitosamente. El coordinador técnico revisará tu solicitud y te proporcionará ayuda lo antes posible." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Ocurrió un error al crear la solicitud de asesoría: " + ex.Message });
             }
         }
     }
