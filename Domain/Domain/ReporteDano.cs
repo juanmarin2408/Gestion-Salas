@@ -16,12 +16,19 @@ namespace Domain
         public Usuario Usuario { get; set; } = null!;
 
         [Required]
-        public Guid EquipoId { get; set; }
+        public TipoReporte Tipo { get; set; } = TipoReporte.Equipo;
+
+        // EquipoId es requerido solo si Tipo == Equipo
+        public Guid? EquipoId { get; set; }
 
         [ForeignKey("EquipoId")]
-        public Equipo Equipo { get; set; } = null!;
+        public Equipo? Equipo { get; set; }
 
-        // La Sala se obtiene a través del Equipo para evitar ciclos de cascada
+        // SalaId es requerido solo si Tipo == Sala
+        public Guid? SalaId { get; set; }
+
+        [ForeignKey("SalaId")]
+        public Sala? Sala { get; set; }
 
         [Required]
         [MaxLength(1000)]

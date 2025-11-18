@@ -11,6 +11,7 @@ namespace Services
         Task<IList<Services.Models.ReporteModels.ReporteModel>> GetReportesByEstado(Domain.Enums.EstadoReporte estado);
         Task<int> GetReportesPendientesCount();
         Task ResolverReporte(Guid reporteId, Guid resueltoPorId, string observaciones);
+        Task Create(Services.Models.ReporteModels.AddReporteModel model);
     }
 }
 

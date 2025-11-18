@@ -20,6 +20,7 @@ namespace Infrastructure.Repositories
                 .Include(r => r.Usuario)
                 .Include(r => r.Equipo)
                     .ThenInclude(e => e.Sala)
+                .Include(r => r.Sala)
                 .Include(r => r.ResueltoPor)
                 .AsNoTracking()
                 .OrderByDescending(r => r.FechaReporte)
@@ -32,6 +33,7 @@ namespace Infrastructure.Repositories
                 .Include(r => r.Usuario)
                 .Include(r => r.Equipo)
                     .ThenInclude(e => e.Sala)
+                .Include(r => r.Sala)
                 .Include(r => r.ResueltoPor)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
@@ -42,6 +44,7 @@ namespace Infrastructure.Repositories
                 .Include(r => r.Usuario)
                 .Include(r => r.Equipo)
                     .ThenInclude(e => e.Sala)
+                .Include(r => r.Sala)
                 .Where(r => r.Estado == estado)
                 .AsNoTracking()
                 .OrderByDescending(r => r.FechaReporte)

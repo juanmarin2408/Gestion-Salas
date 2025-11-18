@@ -9,10 +9,11 @@ namespace Services.Models.ReporteModels
         public Guid UsuarioId { get; set; }
         public string UsuarioNombre { get; set; } = string.Empty;
         public string UsuarioEmail { get; set; } = string.Empty;
-        public Guid EquipoId { get; set; }
-        public string EquipoCodigo { get; set; } = string.Empty;
-        public Guid SalaId { get; set; }
-        public string SalaNumero { get; set; } = string.Empty;
+        public TipoReporte Tipo { get; set; }
+        public Guid? EquipoId { get; set; }
+        public string? EquipoCodigo { get; set; }
+        public Guid? SalaId { get; set; }
+        public string? SalaNumero { get; set; }
         public string Descripcion { get; set; } = string.Empty;
         public DateTime FechaReporte { get; set; }
         public DateTime? FechaResolucion { get; set; }

@@ -1,0 +1,300 @@
+@{
+    ViewData["Title"] = "Mis Reportes de Daños";
+    ViewBag.HideFooter = true;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-dashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/user-reportes.css" asp-append-version="true" />
+}
+
+<div class="user-page">
+    <!-- HEADER -->
+    <header class="user-header">
+        <div class="user-header-left">
+            <div class="user-logo-icon">
+                <span class="material-icon">▤</span>
+            </div>
+            <div class="user-logo-text">
+                <div class="user-app-name">Sistema de Salas</div>
+                <div class="user-app-subtitle">Universidad Santiago de Cali</div>
+            </div>
+        </div>
+
+        <div class="user-header-right">
+            <form asp-controller="Home" asp-action="Logout" method="post" style="display: inline;">
+                <button type="submit" class="user-logout" style="border: none; background: none; cursor: pointer; padding: 0;">
+                    <span class="user-logout-icon">⟲</span>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+
+            <div class="user-user-card">
+                <div class="user-user-avatar">@(Context.Session.GetString("Nombre")?.Substring(0, 1).ToUpper() ?? "U")@(Context.Session.GetString("Apellido")?.Substring(0, 1).ToUpper() ?? "S")</div>
+                <div class="user-user-text">
+                    <div class="user-user-name">@(Context.Session.GetString("Nombre") ?? "Usuario") @(Context.Session.GetString("Apellido") ?? "")</div>
+                    <div class="user-user-role">Usuario</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TABS -->
+    <div class="user-tabs">
+        <a asp-controller="User" asp-action="Index" class="user-tab">
+            <span class="user-tab-icon">🏠</span>
+            <span>Inicio</span>
+        </a>
+        <a asp-controller="User" asp-action="Salas" class="user-tab">
+            <span class="user-tab-icon">🏢</span>
+            <span>Salas</span>
+        </a>
+        <a asp-controller="User" asp-action="Equipos" class="user-tab">
+            <span class="user-tab-icon">💻</span>
+            <span>Mis Equipos</span>
+            @if ((ViewBag.EquiposAsignadosCount ?? 0) > 0)
+            {
+                <span class="user-tab-badge">@(ViewBag.EquiposAsignadosCount)</span>
+            }
+        </a>
+        <a asp-controller="User" asp-action="Solicitudes" class="user-tab">
+            <span class="user-tab-icon">📋</span>
+            <span>Solicitudes</span>
+            @if ((ViewBag.SolicitudesPendientes ?? 0) > 0)
+            {
+                <span class="user-tab-badge">@(ViewBag.SolicitudesPendientes)</span>
+            }
+        </a>
+        <a asp-controller="User" asp-action="Reportes" class="user-tab active">
+            <span class="user-tab-icon">⚠</span>
+            <span>Reportes</span>
+        </a>
+        <button class="user-tab">
+            <span class="user-tab-icon">❓</span>
+            <span>Asesoría</span>
+        </button>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="user-main">
+        <div class="reportes-header">
+            <h1 class="reportes-title">Mis Reportes de Daños</h1>
+            <div class="reportes-controls">
+                <select id="filterEstado" class="filter-select">
+                    @if (ViewBag.EstadoFiltro == "Todos")
+                    {
+                        <option value="Todos" selected>Todos los estados</option>
+                    }
+                    else
+                    {
+                        <option value="Todos">Todos los estados</option>
+                    }
+                    @if (ViewBag.EstadoFiltro == "Pendientes")
+                    {
+                        <option value="Pendientes" selected>Pendientes</option>
+                    }
+                    else
+                    {
+                        <option value="Pendientes">Pendientes</option>
+                    }
+                    @if (ViewBag.EstadoFiltro == "Atendidos")
+                    {
+                        <option value="Resueltos" selected>Atendidos</option>
+                    }
+                    else
+                    {
+                        <option value="Resueltos">Atendidos</option>
+                    }
+                </select>
+                <button type="button" class="btn-nuevo-reporte" id="btnNuevoReporte">
+                    <span>+</span> Nuevo Reporte
+                </button>
+            </div>
+        </div>
+
+        <div id="messageContainer"></div>
+
+        @if (ViewBag.ReportesUsuario != null)
+        {
+            var reportes = (IList<Services.Models.ReporteModels.ReporteModel>)ViewBag.ReportesUsuario;
+            
+            @if (reportes.Count > 0)
+            {
+                <div class="reportes-list">
+                    @foreach (var reporte in reportes)
+                    {
+                        var estadoClass = reporte.Estado switch
+                        {
+                            Domain.Enums.EstadoReporte.Pendiente => "status-pendiente",
+                            Domain.Enums.EstadoReporte.EnRevision => "status-pendiente",
+                            Domain.Enums.EstadoReporte.Resuelto => "status-resuelto",
+                            Domain.Enums.EstadoReporte.Rechazado => "status-rechazado",
+                            _ => ""
+                        };
+
+                        var estadoTexto = reporte.Estado switch
+                        {
+                            Domain.Enums.EstadoReporte.Pendiente => "Pendiente",
+                            Domain.Enums.EstadoReporte.EnRevision => "En Revisión",
+                            Domain.Enums.EstadoReporte.Resuelto => "Atendido",
+                            Domain.Enums.EstadoReporte.Rechazado => "Rechazado",
+                            _ => ""
+                        };
+
+                        var esResuelto = reporte.Estado == Domain.Enums.EstadoReporte.Resuelto;
+                        var esEquipo = reporte.Tipo == Domain.Enums.TipoReporte.Equipo;
+                        var icono = esEquipo ? "💻" : "🏢";
+                        var titulo = esEquipo 
+                            ? $"Equipo: EQ-{reporte.EquipoCodigo}" 
+                            : $"Sala: {reporte.SalaNumero}";
+
+                        <div class="reporte-card">
+                            <div class="reporte-icon">@icono</div>
+                            <div class="reporte-content">
+                                <div class="reporte-header">
+                                    <div class="reporte-info">
+                                        <div class="reporte-titulo">@titulo</div>
+                                        <div class="reporte-fecha">@reporte.FechaReporte.ToString("yyyy-MM-dd HH:mm")</div>
+                                    </div>
+                                    <span class="status-badge @estadoClass">@estadoTexto</span>
+                                </div>
+                                <div class="reporte-descripcion">
+                                    <strong>Descripción del problema:</strong>
+                                    <p>@reporte.Descripcion</p>
+                                </div>
+                                @if (esResuelto && !string.IsNullOrEmpty(reporte.Observaciones))
+                                {
+                                    <div class="reporte-solucion">
+                                        <strong>Solución aplicada:</strong>
+                                        <p>@reporte.Observaciones</p>
+                                        @if (reporte.FechaResolucion.HasValue)
+                                        {
+                                            <div class="reporte-fecha-resolucion">Resuelto el: @reporte.FechaResolucion.Value.ToString("yyyy-MM-dd HH:mm")</div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="user-no-data">
+                    <div class="no-data-icon">📋</div>
+                    <div class="no-data-text">No hay reportes disponibles</div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="user-no-data">
+                <div class="no-data-icon">📋</div>
+                <div class="no-data-text">No hay reportes disponibles</div>
+            </div>
+        }
+
+        <!-- Estadísticas -->
+        <div class="reportes-stats">
+            <div class="stat-card">
+                <div class="stat-number">@(ViewBag.TotalReportes ?? 0)</div>
+                <div class="stat-label">Total de Reportes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">@(ViewBag.ReportesPendientes ?? 0)</div>
+                <div class="stat-label">Pendientes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">@(ViewBag.ReportesResueltos ?? 0)</div>
+                <div class="stat-label">Atendidos</div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Nuevo Reporte -->
+<div id="modalNuevoReporte" class="modal-overlay" style="display: none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2 class="modal-title">Reportar Daño</h2>
+            <button type="button" class="modal-close" id="closeModalReporte">✕</button>
+        </div>
+
+        <div id="modalMessageReporte" class="modal-message" style="display: none;"></div>
+
+        <form id="formNuevoReporte" class="modal-form">
+            @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <p class="modal-subtitle">Reporta un problema en un equipo o infraestructura de sala</p>
+
+                <div class="form-field">
+                    <label for="TipoReporte">Tipo de Reporte</label>
+                    <select id="TipoReporte" name="TipoReporte" class="form-select">
+                        <option value="Equipo">Equipo de Cómputo</option>
+                        <option value="Sala">Infraestructura de Sala</option>
+                    </select>
+                    <span class="field-error"></span>
+                </div>
+
+                <div class="form-field" id="fieldEquipo">
+                    <label for="EquipoId">Código del Equipo *</label>
+                    <select id="EquipoId" name="EquipoId" class="form-select">
+                        <option value="">Selecciona un equipo</option>
+                        @if (ViewBag.EquiposDisponibles != null)
+                        {
+                            var equipos = ViewBag.EquiposDisponibles as IEnumerable<dynamic>;
+                            if (equipos != null)
+                            {
+                                @foreach (var equipo in equipos)
+                                {
+                                    <option value="@equipo.Id">@equipo.Codigo - Sala: @equipo.SalaNumero</option>
+                                }
+                            }
+                        }
+                    </select>
+                    <span class="field-error"></span>
+                </div>
+
+                <div class="form-field" id="fieldSala" style="display: none;">
+                    <label for="SalaId">Nombre de la Sala *</label>
+                    <select id="SalaId" name="SalaId" class="form-select">
+                        <option value="">Selecciona una sala</option>
+                        @if (ViewBag.SalasDisponibles != null)
+                        {
+                            var salas = ViewBag.SalasDisponibles as IEnumerable<dynamic>;
+                            if (salas != null)
+                            {
+                                @foreach (var sala in salas)
+                                {
+                                    <option value="@sala.Id">@sala.Numero - @sala.Ubicacion</option>
+                                }
+                            }
+                        }
+                    </select>
+                    <span class="field-error"></span>
+                </div>
+
+                <div class="form-field">
+                    <label for="Descripcion">Descripción del Problema *</label>
+                    <textarea id="Descripcion" name="Descripcion" class="form-textarea" rows="4" placeholder="Ej: El teclado no funciona, algunas teclas no responden..." required maxlength="1000"></textarea>
+                    <span class="field-error"></span>
+                </div>
+
+                <div class="modal-info">
+                    El reporte será enviado al coordinador de sala para su atención.
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="btnCancelReporte">Cancelar</button>
+                <button type="submit" class="btn-primary" id="btnEnviarReporte">Enviar Reporte</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/user-reportes.js" asp-append-version="true"></script>
+}
+

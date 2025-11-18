@@ -51,4 +51,10 @@ namespace Domain.Enums
         Urgente = 3
     }
 
+    public enum TipoReporte
+    {
+        Equipo = 0,
+        Sala = 1
+    }
+
 }

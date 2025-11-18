@@ -13,11 +13,16 @@ namespace Services
     public class ReporteDanoService : IReporteDanoService
     {
         private readonly IReporteDanoRepository _reporteRepository;
+        private readonly IEquipoRepository _equipoRepository;
         private readonly IMapper _mapper;
 
-        public ReporteDanoService(IReporteDanoRepository reporteRepository, IMapper mapper)
+        public ReporteDanoService(
+            IReporteDanoRepository reporteRepository, 
+            IEquipoRepository equipoRepository,
+            IMapper mapper)
         {
             _reporteRepository = reporteRepository;
+            _equipoRepository = equipoRepository;
             _mapper = mapper;
         }
 
@@ -30,10 +35,11 @@ namespace Services
                 UsuarioId = r.UsuarioId,
                 UsuarioNombre = $"{r.Usuario.Nombre} {r.Usuario.Apellido}".Trim(),
                 UsuarioEmail = r.Usuario.Email,
+                Tipo = r.Tipo,
                 EquipoId = r.EquipoId,
-                EquipoCodigo = r.Equipo.Id.ToString().Substring(0, 8).ToUpper(),
-                SalaId = r.Equipo.SalaId,
-                SalaNumero = r.Equipo.Sala.Numero,
+                EquipoCodigo = r.Equipo != null ? r.Equipo.Id.ToString().Substring(0, 8).ToUpper() : null,
+                SalaId = r.SalaId, // Ya está guardado en el reporte (del equipo o directamente)
+                SalaNumero = r.Sala != null ? r.Sala.Numero : (r.Equipo != null ? r.Equipo.Sala?.Numero : null),
                 Descripcion = r.Descripcion,
                 FechaReporte = r.FechaReporte,
                 FechaResolucion = r.FechaResolucion,
@@ -56,10 +62,11 @@ namespace Services
                 UsuarioId = reporte.UsuarioId,
                 UsuarioNombre = $"{reporte.Usuario.Nombre} {reporte.Usuario.Apellido}".Trim(),
                 UsuarioEmail = reporte.Usuario.Email,
+                Tipo = reporte.Tipo,
                 EquipoId = reporte.EquipoId,
-                EquipoCodigo = reporte.Equipo.Id.ToString().Substring(0, 8).ToUpper(),
-                SalaId = reporte.Equipo.SalaId,
-                SalaNumero = reporte.Equipo.Sala.Numero,
+                EquipoCodigo = reporte.Equipo != null ? reporte.Equipo.Id.ToString().Substring(0, 8).ToUpper() : null,
+                SalaId = reporte.SalaId, // Ya está guardado en el reporte (del equipo o directamente)
+                SalaNumero = reporte.Sala != null ? reporte.Sala.Numero : (reporte.Equipo != null ? reporte.Equipo.Sala?.Numero : null),
                 Descripcion = reporte.Descripcion,
                 FechaReporte = reporte.FechaReporte,
                 FechaResolucion = reporte.FechaResolucion,
@@ -80,10 +87,11 @@ namespace Services
                 UsuarioId = r.UsuarioId,
                 UsuarioNombre = $"{r.Usuario.Nombre} {r.Usuario.Apellido}".Trim(),
                 UsuarioEmail = r.Usuario.Email,
+                Tipo = r.Tipo,
                 EquipoId = r.EquipoId,
-                EquipoCodigo = r.Equipo.Id.ToString().Substring(0, 8).ToUpper(),
-                SalaId = r.Equipo.SalaId,
-                SalaNumero = r.Equipo.Sala.Numero,
+                EquipoCodigo = r.Equipo != null ? r.Equipo.Id.ToString().Substring(0, 8).ToUpper() : null,
+                SalaId = r.SalaId, // Ya está guardado en el reporte (del equipo o directamente)
+                SalaNumero = r.Sala != null ? r.Sala.Numero : (r.Equipo != null ? r.Equipo.Sala?.Numero : null),
                 Descripcion = r.Descripcion,
                 FechaReporte = r.FechaReporte,
                 FechaResolucion = r.FechaResolucion,
@@ -120,6 +128,53 @@ namespace Services
             reporte.Observaciones = observaciones;
 
             await _reporteRepository.Update(reporte);
+        }
+
+        public async Task Create(AddReporteModel model)
+        {
+            // Validar que se proporcione el ID correspondiente según el tipo
+            if (model.Tipo == TipoReporte.Equipo && !model.EquipoId.HasValue)
+            {
+                throw new InvalidOperationException("El ID del equipo es requerido para reportes de equipo.");
+            }
+
+            if (model.Tipo == TipoReporte.Sala && !model.SalaId.HasValue)
+            {
+                throw new InvalidOperationException("El ID de la sala es requerido para reportes de infraestructura de sala.");
+            }
+
+            Guid? salaId = null;
+
+            // Si es reporte de equipo, obtener el SalaId del equipo
+            if (model.Tipo == TipoReporte.Equipo && model.EquipoId.HasValue)
+            {
+                var equipo = await _equipoRepository.GetEquipo(model.EquipoId.Value);
+                if (equipo == null)
+                {
+                    throw new InvalidOperationException("El equipo especificado no existe.");
+                }
+                salaId = equipo.SalaId; // Guardar también el SalaId del equipo
+            }
+            // Si es reporte de sala, usar el SalaId proporcionado
+            else if (model.Tipo == TipoReporte.Sala && model.SalaId.HasValue)
+            {
+                salaId = model.SalaId.Value;
+            }
+
+            var reporte = new ReporteDano
+            {
+                Id = Guid.NewGuid(),
+                UsuarioId = model.UsuarioId,
+                Tipo = model.Tipo,
+                EquipoId = model.Tipo == TipoReporte.Equipo ? model.EquipoId : null,
+                SalaId = salaId, // Siempre guardar el SalaId (del equipo o directamente)
+                Descripcion = model.Descripcion,
+                Prioridad = model.Prioridad,
+                FechaReporte = DateTime.UtcNow,
+                Estado = EstadoReporte.Pendiente
+            };
+
+            await _reporteRepository.Save(reporte);
         }
     }
 }
