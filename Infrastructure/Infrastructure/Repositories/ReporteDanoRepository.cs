@@ -19,7 +19,7 @@ namespace Infrastructure.Repositories
             return await context.ReportesDanos
                 .Include(r => r.Usuario)
                 .Include(r => r.Equipo)
-                    .ThenInclude(e => e.Sala)
+                    .ThenInclude(e => e!.Sala)
                 .Include(r => r.Sala)
                 .Include(r => r.ResueltoPor)
                 .AsNoTracking()
@@ -32,7 +32,7 @@ namespace Infrastructure.Repositories
             return await context.ReportesDanos
                 .Include(r => r.Usuario)
                 .Include(r => r.Equipo)
-                    .ThenInclude(e => e.Sala)
+                    .ThenInclude(e => e!.Sala)
                 .Include(r => r.Sala)
                 .Include(r => r.ResueltoPor)
                 .FirstOrDefaultAsync(r => r.Id == id);
@@ -43,7 +43,7 @@ namespace Infrastructure.Repositories
             return await context.ReportesDanos
                 .Include(r => r.Usuario)
                 .Include(r => r.Equipo)
-                    .ThenInclude(e => e.Sala)
+                    .ThenInclude(e => e!.Sala)
                 .Include(r => r.Sala)
                 .Where(r => r.Estado == estado)
                 .AsNoTracking()

@@ -87,6 +87,9 @@ public class SolicitudPrestamoServiceTests
             .ReturnsAsync(new List<Equipo> { equipoDisponible });
         _equipoRepository.Setup(r => r.GetEquipo(equipoDisponible.Id))
             .ReturnsAsync(equipoDisponible);
+        // Configurar GetEquipos para la validación de equipo activo
+        _equipoRepository.Setup(r => r.GetEquipos())
+            .ReturnsAsync(new List<Equipo>());
 
         await _service.AprobarSolicitud(solicitud.Id, aprobadorId);
 

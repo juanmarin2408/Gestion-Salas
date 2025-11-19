@@ -10,19 +10,19 @@ namespace Domain
         public Guid Id { get; set; }
 
         [Required, MaxLength(100)]
-        public string Nombre { get; set; }
+        public required string Nombre { get; set; }
 
         [MaxLength(100)]
-        public string Apellido { get; set; }
+        public string Apellido { get; set; } = string.Empty;
 
         [Required, MaxLength(50)]
-        public string Documento { get; set; }
+        public required string Documento { get; set; }
 
         [Required, EmailAddress, MaxLength(256)]
-        public string Email { get; set; }
+        public required string Email { get; set; }
 
         [Required]
-        public string PasswordHash { get; set; }
+        public required string PasswordHash { get; set; }
 
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
 

@@ -252,7 +252,7 @@ namespace MvcSample.Controllers
                     return Json(new { success = false, message = "No se pudo identificar al coordinador." });
                 }
 
-                await _reporteService.ResolverReporte(id, coordinadorId, Observaciones);
+                await _reporteService.ResolverReporte(id, coordinadorId, Observaciones.Trim());
                 return Json(new { success = true, message = "Reporte atendido exitosamente." });
             }
             catch (InvalidOperationException ex)

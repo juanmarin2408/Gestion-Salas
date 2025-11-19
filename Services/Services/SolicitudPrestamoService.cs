@@ -204,6 +204,17 @@ namespace Services
 
         public async Task Create(AddSolicitudModel model)
         {
+            // Verificar si el usuario ya tiene un equipo activo asignado
+            var equipos = await _equipoRepository.GetEquipos();
+            var equipoActivo = equipos.FirstOrDefault(e => 
+                e.AsignadoAId == model.UsuarioId && 
+                e.Estado == EstadoEquipo.Asignado);
+
+            if (equipoActivo != null)
+            {
+                throw new InvalidOperationException("Ya tienes un equipo activo asignado. No puedes solicitar otro equipo hasta que liberes el actual.");
+            }
+
             var solicitud = new SolicitudPrestamo
             {
                 Id = Guid.NewGuid(),
@@ -260,6 +271,18 @@ namespace Services
             if (equipo.SalaId != solicitud.SalaId)
             {
                 throw new InvalidOperationException("El equipo no pertenece a la sala solicitada.");
+            }
+
+            // Verificar si el usuario ya tiene un equipo activo asignado
+            var equipos = await _equipoRepository.GetEquipos();
+            var equipoActivo = equipos.FirstOrDefault(e => 
+                e.AsignadoAId == solicitud.UsuarioId && 
+                e.Estado == EstadoEquipo.Asignado &&
+                e.Id != equipoId.Value); // Excluir el equipo que se está intentando asignar
+
+            if (equipoActivo != null)
+            {
+                throw new InvalidOperationException("El usuario ya tiene un equipo activo asignado. No se puede aprobar la solicitud hasta que libere el equipo actual.");
             }
 
             // Asignar el equipo al usuario

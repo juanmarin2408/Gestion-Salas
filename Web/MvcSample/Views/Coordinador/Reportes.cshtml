@@ -200,7 +200,12 @@
                                 <td class="actions-cell">
                                     @if (reporte.Estado == Domain.Enums.EstadoReporte.Pendiente || reporte.Estado == Domain.Enums.EstadoReporte.EnRevision)
                                     {
-                                        <button type="button" class="btn-atender" data-reporte-id="@reporte.Id" data-codigo="@reporte.EquipoCodigo" data-usuario="@reporte.UsuarioNombre" data-descripcion="@reporte.Descripcion" title="Atender">
+                                        <button type="button" class="btn-atender" 
+                                                data-reporte-id="@reporte.Id.ToString()" 
+                                                data-codigo="@(reporte.EquipoCodigo ?? "")" 
+                                                data-usuario="@(reporte.UsuarioNombre ?? "")" 
+                                                data-descripcion="@(reporte.Descripcion ?? "")" 
+                                                title="Atender">
                                             <span>✓</span>
                                             <span>Atender</span>
                                         </button>

@@ -29,7 +29,13 @@ public class UserServiceTests
         var model = BuildAddUserModel();
 
         _userRepository.Setup(r => r.GetByEmail(model.Email))
-            .ReturnsAsync(new Usuario());
+            .ReturnsAsync(new Usuario
+            {
+                Nombre = "Test",
+                Documento = "TEST123",
+                Email = model.Email,
+                PasswordHash = "hash"
+            });
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _service.Register(model));
     }
@@ -42,7 +48,13 @@ public class UserServiceTests
         _userRepository.Setup(r => r.GetByEmail(model.Email))
             .ReturnsAsync((Usuario?)null);
         _userRepository.Setup(r => r.GetByDocumento(model.Documento))
-            .ReturnsAsync(new Usuario());
+            .ReturnsAsync(new Usuario
+            {
+                Nombre = "Test",
+                Documento = model.Documento,
+                Email = "test@example.com",
+                PasswordHash = "hash"
+            });
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => _service.Register(model));
     }

@@ -226,6 +226,10 @@ namespace MvcSample.Controllers
 
                 return Json(new { success = true, message = "Solicitud creada exitosamente." });
             }
+            catch (InvalidOperationException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Ocurrió un error al crear la solicitud: " + ex.Message });

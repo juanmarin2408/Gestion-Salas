@@ -163,6 +163,18 @@ namespace Services
                 throw new InvalidOperationException("El equipo no está disponible para asignación.");
             }
 
+            // Verificar si el usuario ya tiene un equipo activo asignado
+            var equipos = await _equipoRepository.GetEquipos();
+            var equipoActivo = equipos.FirstOrDefault(e => 
+                e.AsignadoAId == usuarioId && 
+                e.Estado == EstadoEquipo.Asignado &&
+                e.Id != equipoId); // Excluir el equipo que se está intentando asignar
+
+            if (equipoActivo != null)
+            {
+                throw new InvalidOperationException("El usuario ya tiene un equipo activo asignado. No se puede asignar otro equipo hasta que libere el actual.");
+            }
+
             equipo.Estado = EstadoEquipo.Asignado;
             equipo.AsignadoAId = usuarioId;
             equipo.MotivoBloqueo = null;
