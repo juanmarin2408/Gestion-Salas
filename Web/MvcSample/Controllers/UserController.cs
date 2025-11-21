@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Services;
 using Domain.Enums;
 using MvcSample.Filters;
+using Services.Models.SolicitudModels;
 using System;
 using System.Linq;
 
@@ -179,10 +180,41 @@ namespace MvcSample.Controllers
             });
         }
 
-        // POST: User/SolicitarEquipo
+        // GET: User/GetReservasSala/{id}
+        [HttpGet]
+        public async Task<IActionResult> GetReservasSala(Guid id)
+        {
+            var solicitudes = await _solicitudService.GetSolicitudes();
+            var reservas = solicitudes
+                .Where(s => s.SalaId == id && s.Tipo == TipoSolicitudPrestamo.SalaCompleta && s.Estado != EstadoSolicitud.Rechazada)
+                .OrderBy(s => s.FechaInicioUso ?? s.FechaSolicitud)
+                .Take(10)
+                .Select(s => new
+                {
+                    id = s.Id,
+                    usuario = s.UsuarioNombre,
+                    estado = s.Estado.ToString(),
+                    titulo = s.TituloUso,
+                    motivo = s.JustificacionUso,
+                    inicio = s.FechaInicioUso ?? s.FechaSolicitud,
+                    fin = s.FechaFinUso ?? (s.FechaInicioUso ?? s.FechaSolicitud).AddHours(s.TiempoEstimado)
+                });
+
+            return Json(new { success = true, reservas });
+        }
+
+        // POST: User/SolicitarPrestamo
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SolicitarEquipo(Guid SalaId, int TiempoEstimado)
+        public async Task<IActionResult> SolicitarPrestamo(
+            TipoSolicitudPrestamo Tipo,
+            Guid SalaId,
+            int? TiempoEstimado,
+            DateTime? FechaInicioUso,
+            DateTime? FechaFinUso,
+            string? MotivoUso,
+            int? NumeroAsistentes,
+            string? TituloUso)
         {
             var userIdString = HttpContext.Session.GetString("UserId");
             if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out var userId))
@@ -192,12 +224,6 @@ namespace MvcSample.Controllers
 
             try
             {
-                if (TiempoEstimado <= 0)
-                {
-                    return Json(new { success = false, message = "El tiempo estimado debe ser mayor a 0 horas." });
-                }
-
-                // Verificar que la sala exista y tenga equipos disponibles
                 var sala = await _salaService.GetSala(SalaId);
                 if (sala == null)
                 {
@@ -206,25 +232,71 @@ namespace MvcSample.Controllers
 
                 if (sala.Estado != EstadoSala.Activa)
                 {
-                    return Json(new { success = false, message = "La sala no está disponible." });
+                    return Json(new { success = false, message = "La sala no está disponible actualmente." });
                 }
 
-                var equipos = await _equipoService.GetEquipos();
-                var equiposDisponibles = equipos.Count(e => e.SalaId == SalaId && e.Estado == EstadoEquipo.Disponible);
-                if (equiposDisponibles == 0)
+                if (Tipo == TipoSolicitudPrestamo.Equipo)
                 {
-                    return Json(new { success = false, message = "No hay equipos disponibles en esta sala." });
+                    if (!TiempoEstimado.HasValue || TiempoEstimado.Value <= 0)
+                    {
+                        return Json(new { success = false, message = "Selecciona un tiempo estimado válido." });
+                    }
+
+                    var equipos = await _equipoService.GetEquipos();
+                    var equiposDisponibles = equipos.Count(e => e.SalaId == SalaId && e.Estado == EstadoEquipo.Disponible);
+                    if (equiposDisponibles == 0)
+                    {
+                        return Json(new { success = false, message = "No hay equipos disponibles en esta sala." });
+                    }
+
+                    await _solicitudService.Create(new AddSolicitudModel
+                    {
+                        UsuarioId = userId,
+                        SalaId = SalaId,
+                        Tipo = TipoSolicitudPrestamo.Equipo,
+                        TiempoEstimado = TiempoEstimado.Value
+                    });
+
+                    return Json(new { success = true, message = "Solicitud de equipo creada exitosamente." });
                 }
-
-                await _solicitudService.Create(new Services.Models.SolicitudModels.AddSolicitudModel
+                else
                 {
-                    UsuarioId = userId,
-                    SalaId = SalaId,
-                    EquipoId = null, // Sin equipo específico, se asigna cuando se aprueba
-                    TiempoEstimado = TiempoEstimado
-                });
+                    if (!FechaInicioUso.HasValue || !FechaFinUso.HasValue)
+                    {
+                        return Json(new { success = false, message = "Debes indicar la fecha y hora de inicio y fin." });
+                    }
 
-                return Json(new { success = true, message = "Solicitud creada exitosamente." });
+                    if (FechaFinUso <= FechaInicioUso)
+                    {
+                        return Json(new { success = false, message = "La hora de finalización debe ser mayor a la hora de inicio." });
+                    }
+
+                    if (string.IsNullOrWhiteSpace(MotivoUso))
+                    {
+                        return Json(new { success = false, message = "Describe brevemente el motivo del préstamo." });
+                    }
+
+                    var horas = (int)Math.Ceiling((FechaFinUso.Value - FechaInicioUso.Value).TotalHours);
+                    if (horas <= 0)
+                    {
+                        horas = 1;
+                    }
+
+                    await _solicitudService.Create(new AddSolicitudModel
+                    {
+                        UsuarioId = userId,
+                        SalaId = SalaId,
+                        Tipo = TipoSolicitudPrestamo.SalaCompleta,
+                        TiempoEstimado = horas,
+                        FechaInicioUso = FechaInicioUso,
+                        FechaFinUso = FechaFinUso,
+                        JustificacionUso = MotivoUso?.Trim(),
+                        TituloUso = TituloUso?.Trim(),
+                        NumeroAsistentes = NumeroAsistentes
+                    });
+
+                    return Json(new { success = true, message = "Tu solicitud de sala fue registrada. El coordinador revisará la disponibilidad." });
+                }
             }
             catch (InvalidOperationException ex)
             {

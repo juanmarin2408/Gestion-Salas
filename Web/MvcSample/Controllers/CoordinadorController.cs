@@ -83,7 +83,7 @@ namespace MvcSample.Controllers
             try
             {
                 await _solicitudService.AprobarSolicitud(id, coordinadorId);
-                return Json(new { success = true, message = "Solicitud aprobada exitosamente. El equipo ha sido asignado al usuario." });
+                return Json(new { success = true, message = "Solicitud aprobada exitosamente." });
             }
             catch (InvalidOperationException ex)
             {

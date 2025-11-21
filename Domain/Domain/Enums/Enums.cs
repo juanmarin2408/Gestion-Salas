@@ -65,4 +65,10 @@ namespace Domain.Enums
         Rechazado = 3
     }
 
+    public enum TipoSolicitudPrestamo
+    {
+        Equipo = 0,
+        SalaCompleta = 1
+    }
+
 }

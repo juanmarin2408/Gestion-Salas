@@ -14,6 +14,12 @@ namespace Services.Models.SolicitudModels
         public Guid? EquipoId { get; set; }
         public string? EquipoCodigo { get; set; }
         public int TiempoEstimado { get; set; }
+        public TipoSolicitudPrestamo Tipo { get; set; } = TipoSolicitudPrestamo.Equipo;
+        public DateTime? FechaInicioUso { get; set; }
+        public DateTime? FechaFinUso { get; set; }
+        public string? TituloUso { get; set; }
+        public string? JustificacionUso { get; set; }
+        public int? NumeroAsistentes { get; set; }
         public DateTime FechaSolicitud { get; set; }
         public DateTime? FechaAprobacion { get; set; }
         public DateTime? FechaRechazo { get; set; }

@@ -1,3 +1,5 @@
+let salaSeleccionadaId = null;
+
 $(document).ready(function () {
     // Ver detalles de sala
     $(document).on('click', '.btn-ver-detalles', async function () {
@@ -43,12 +45,20 @@ $(document).ready(function () {
 
             if (data.success) {
                 const sala = data.sala;
-                $('#modalSolicitarTitle').text(`Solicitar Equipo en ${sala.numero}`);
+                salaSeleccionadaId = salaId;
+                $('#modalSolicitarTitle').text(`Reservar la sala ${sala.numero}`);
                 $('#modalSolicitarSala').text(sala.numero);
                 $('#modalSolicitarUbicacion').text(sala.ubicacion);
                 $('#modalSolicitarEquipos').text(sala.equiposDisponibles);
                 $('#salaIdSolicitar').val(salaId);
-                $('#tiempoEstimado').val('');
+                $('#tituloUso').val('');
+                $('#motivoUso').val('');
+                $('#numeroAsistentes').val('');
+                $('#fechaInicioUso').val('');
+                $('#fechaFinUso').val('');
+                $('#tiempoEstimadoEquipo').val('');
+                $('input[name="tipoPrestamo"][value="Equipo"]').prop('checked', true);
+                actualizarVistaTipo();
 
                 abrirModalSolicitar();
             } else {
@@ -73,6 +83,10 @@ $(document).ready(function () {
     });
 });
 
+$(document).on('change', 'input[name="tipoPrestamo"]', function () {
+    actualizarVistaTipo();
+});
+
 function abrirModalDetalles() {
     $('#modalDetalles').addClass('show');
     $('body').css('overflow', 'hidden');
@@ -92,6 +106,61 @@ function cerrarModalSolicitar() {
     $('#modalSolicitar').removeClass('show');
     $('#formSolicitar')[0].reset();
     $('body').css('overflow', 'auto');
+    salaSeleccionadaId = null;
+}
+
+function actualizarVistaTipo() {
+    const tipo = $('input[name="tipoPrestamo"]:checked').val();
+    if (tipo === 'SalaCompleta') {
+        $('#seccionSala').removeClass('hidden');
+        $('#seccionEquipo').addClass('hidden');
+        $('#reservasSalaWrapper').show();
+        if (salaSeleccionadaId) {
+            cargarReservasSala(salaSeleccionadaId);
+        }
+    } else {
+        $('#seccionSala').addClass('hidden');
+        $('#seccionEquipo').removeClass('hidden');
+        $('#reservasSalaWrapper').hide();
+    }
+}
+
+async function cargarReservasSala(salaId) {
+    const $lista = $('#reservasSalaList');
+    $lista.html('<div class="cargando-reservas">Cargando reservas...</div>');
+
+    try {
+        const response = await fetch(`/User/GetReservasSala/${salaId}`);
+        const data = await response.json();
+
+        if (!data.success || !data.reservas || data.reservas.length === 0) {
+            $lista.html('<div class="sin-reservas">Sin reservas registradas</div>');
+            return;
+        }
+
+        const elementos = data.reservas.map(reserva => {
+            const inicio = new Date(reserva.inicio);
+            const fin = new Date(reserva.fin);
+            const titulo = reserva.titulo || 'Uso reservado';
+            return `
+                <div class="reserva-item">
+                    <div class="reserva-horario">
+                        <span>${inicio.toLocaleDateString()} · ${inicio.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span class="reserva-arrow">→</span>
+                        <span>${fin.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <div class="reserva-detalle">
+                        <strong>${titulo}</strong>
+                        <span>${reserva.estado}</span>
+                    </div>
+                </div>`;
+        }).join('');
+
+        $lista.html(elementos);
+    } catch (error) {
+        console.error('Error cargando reservas:', error);
+        $lista.html('<div class="sin-reservas">No se pudieron cargar las reservas</div>');
+    }
 }
 
 async function enviarSolicitud(event) {
@@ -100,22 +169,58 @@ async function enviarSolicitud(event) {
     const form = event.target;
     const formData = new FormData(form);
     const salaId = formData.get('SalaId');
-    const tiempoEstimado = formData.get('TiempoEstimado');
+    const tipo = $('input[name="tipoPrestamo"]:checked').val();
+    const token = $('input[name="__RequestVerificationToken"]').val();
 
-    if (!tiempoEstimado || tiempoEstimado <= 0) {
-        showMessage('Por favor selecciona un tiempo estimado válido', 'error');
-        return;
+    const body = new URLSearchParams();
+    body.append('SalaId', salaId);
+    body.append('Tipo', tipo);
+    body.append('__RequestVerificationToken', token);
+
+    if (tipo === 'SalaCompleta') {
+        const fechaInicio = formData.get('FechaInicioUso');
+        const fechaFin = formData.get('FechaFinUso');
+        const motivoUso = (formData.get('MotivoUso') || '').trim();
+        const numeroAsistentes = formData.get('NumeroAsistentes');
+        const tituloUso = formData.get('TituloUso') || '';
+
+        if (!fechaInicio || !fechaFin) {
+            showMessage('Selecciona la fecha y hora de inicio y fin', 'error');
+            return;
+        }
+
+        if (new Date(fechaFin) <= new Date(fechaInicio)) {
+            showMessage('La hora de finalización debe ser mayor a la de inicio', 'error');
+            return;
+        }
+
+        if (!motivoUso) {
+            showMessage('Describe el motivo del préstamo de la sala', 'error');
+            return;
+        }
+
+        body.append('FechaInicioUso', fechaInicio);
+        body.append('FechaFinUso', fechaFin);
+        body.append('MotivoUso', motivoUso);
+        body.append('NumeroAsistentes', numeroAsistentes || '');
+        body.append('TituloUso', tituloUso);
+    } else {
+        const tiempoEstimado = $('#tiempoEstimadoEquipo').val();
+        if (!tiempoEstimado) {
+            showMessage('Selecciona el tiempo estimado de uso', 'error');
+            return;
+        }
+        body.append('TiempoEstimado', tiempoEstimado);
     }
 
     try {
-        const token = $('input[name="__RequestVerificationToken"]').val();
-        const response = await fetch('/User/SolicitarEquipo', {
+        const response = await fetch('/User/SolicitarPrestamo', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'RequestVerificationToken': token
             },
-            body: `SalaId=${salaId}&TiempoEstimado=${tiempoEstimado}&__RequestVerificationToken=${token}`
+            body: body.toString()
         });
 
         const data = await response.json();

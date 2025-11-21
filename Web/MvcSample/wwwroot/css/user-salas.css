@@ -353,6 +353,55 @@
     margin-bottom: 20px;
 }
 
+.tipo-prestamo-selector {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.tipo-prestamo-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.tipo-prestamo-option input {
+    accent-color: #2563eb;
+}
+
+.prestamo-section.hidden {
+    display: none;
+}
+
+.prestamo-section {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 16px;
+    background: #f9fafb;
+    margin-bottom: 18px;
+}
+
+.prestamo-section .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-group-double {
+    display: flex;
+    gap: 16px;
+}
+
+.form-group-double > div {
+    flex: 1;
+}
+
 .form-group label {
     display: block;
     font-size: 14px;
@@ -378,6 +427,71 @@
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
+.modal-reservas {
+    margin-top: 28px;
+    background: #f9fafb;
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+}
+
+.modal-reservas-header {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 12px;
+}
+
+.modal-reservas-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.reserva-item {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.reserva-horario {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.reserva-arrow {
+    color: #94a3b8;
+}
+
+.reserva-detalle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: #0f172a;
+}
+
+.reserva-detalle span {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.sin-reservas,
+.cargando-reservas {
+    font-size: 13px;
+    color: #9ca3af;
+    text-align: center;
+}
+
 @media (max-width: 768px) {
     .salas-grid {
         grid-template-columns: 1fr;
@@ -393,6 +507,15 @@
     }
 
     .sala-actions {
+        flex-direction: column;
+    }
+
+    .form-group-double {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .tipo-prestamo-selector {
         flex-direction: column;
     }
 }

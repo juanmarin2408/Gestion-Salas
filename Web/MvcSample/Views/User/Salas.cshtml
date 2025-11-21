@@ -109,7 +109,7 @@
                                 _ => "estado-libre"
                             };
 
-                            var puedeSolicitar = estado == "Libre" && equiposDisponibles > 0;
+                            var puedeSolicitar = sala.Estado == Domain.Enums.EstadoSala.Activa;
 
                             <div class="sala-card">
                                 <div class="sala-icon">🏢</div>
@@ -143,7 +143,7 @@
                                         Ver Detalles
                                     </button>
                                     <button type="button" class="btn-solicitar @(puedeSolicitar ? "" : "disabled")" data-sala-id="@sala.Id" @(puedeSolicitar ? "" : "disabled")>
-                                        Solicitar
+                                        Reservar Sala
                                     </button>
                                 </div>
                             </div>
@@ -205,17 +205,27 @@
     </div>
 </div>
 
-<!-- Modal Solicitar Equipo -->
+<!-- Modal Solicitar Sala -->
 <div id="modalSolicitar" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 id="modalSolicitarTitle">Solicitar Equipo en Sala</h2>
+            <h2 id="modalSolicitarTitle">Solicitar préstamo de sala</h2>
             <button type="button" class="modal-close" onclick="cerrarModalSolicitar()">&times;</button>
         </div>
         <form id="formSolicitar" onsubmit="enviarSolicitud(event)">
             @Html.AntiForgeryToken()
             <div class="modal-body">
-                <div class="modal-subtitle">Ingresa el tiempo estimado de uso</div>
+                <div class="modal-subtitle">Completa los datos para reservar la sala</div>
+                <div class="tipo-prestamo-selector">
+                    <label class="tipo-prestamo-option">
+                        <input type="radio" name="tipoPrestamo" value="Equipo" checked />
+                        <span>Solicitar equipo</span>
+                    </label>
+                    <label class="tipo-prestamo-option">
+                        <input type="radio" name="tipoPrestamo" value="SalaCompleta" />
+                        <span>Reservar sala completa</span>
+                    </label>
+                </div>
                 <div class="modal-solicitar-info">
                     <div class="modal-solicitar-item">
                         <span class="modal-solicitar-label">Sala:</span>
@@ -230,20 +240,55 @@
                         <span class="modal-solicitar-value" id="modalSolicitarEquipos"></span>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="tiempoEstimado">Tiempo Estimado de Uso *</label>
-                    <select id="tiempoEstimado" name="TiempoEstimado" class="form-control" required>
-                        <option value="">Selecciona el tiempo</option>
-                        <option value="1">1 hora</option>
-                        <option value="2">2 horas</option>
-                        <option value="3">3 horas</option>
-                        <option value="4">4 horas</option>
-                        <option value="5">5 horas</option>
-                        <option value="6">6 horas</option>
-                        <option value="7">7 horas</option>
-                        <option value="8">8 horas</option>
-                    </select>
-                    <input type="hidden" id="salaIdSolicitar" name="SalaId" />
+                <div id="seccionSala" class="prestamo-section hidden">
+                    <div class="form-group">
+                        <label for="tituloUso">Nombre del evento (opcional)</label>
+                        <input type="text" id="tituloUso" name="TituloUso" maxlength="150" class="form-control" placeholder="Ej: Taller de innovación" />
+                    </div>
+                    <div class="form-group form-group-double">
+                        <div>
+                            <label for="fechaInicioUso">Inicio del préstamo *</label>
+                            <input type="datetime-local" id="fechaInicioUso" name="FechaInicioUso" class="form-control" />
+                        </div>
+                        <div>
+                            <label for="fechaFinUso">Fin del préstamo *</label>
+                            <input type="datetime-local" id="fechaFinUso" name="FechaFinUso" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="motivoUso">Motivo o descripción *</label>
+                        <textarea id="motivoUso" name="MotivoUso" class="form-control" maxlength="500" rows="3" placeholder="Describe brevemente el uso de la sala"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="numeroAsistentes">Asistentes estimados</label>
+                        <input type="number" id="numeroAsistentes" name="NumeroAsistentes" class="form-control" min="1" placeholder="Ej: 20" />
+                    </div>
+                </div>
+                <div id="seccionEquipo" class="prestamo-section">
+                    <div class="form-group">
+                        <label for="tiempoEstimadoEquipo">Tiempo estimado de uso *</label>
+                        <select id="tiempoEstimadoEquipo" class="form-control">
+                            <option value="">Selecciona el tiempo</option>
+                            <option value="1">1 hora</option>
+                            <option value="2">2 horas</option>
+                            <option value="3">3 horas</option>
+                            <option value="4">4 horas</option>
+                            <option value="5">5 horas</option>
+                            <option value="6">6 horas</option>
+                            <option value="7">7 horas</option>
+                            <option value="8">8 horas</option>
+                        </select>
+                    </div>
+                </div>
+                <input type="hidden" id="salaIdSolicitar" name="SalaId" />
+
+                <div class="modal-reservas" id="reservasSalaWrapper">
+                    <div class="modal-reservas-header">
+                        Reservas próximas en esta sala
+                    </div>
+                    <div id="reservasSalaList" class="modal-reservas-list">
+                        <div class="sin-reservas">Sin reservas registradas</div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">

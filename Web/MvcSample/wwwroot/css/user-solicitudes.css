@@ -90,6 +90,27 @@
     color: #0f172a;
 }
 
+.tipo-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.tipo-sala {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.tipo-equipo {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
 .solicitud-sala {
     font-weight: 700;
     color: #2563eb;
@@ -100,6 +121,16 @@
     font-weight: 500;
 }
 
+.horario-rango {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.horario-arrow {
+    color: #9ca3af;
+}
+
 .solicitud-fecha {
     color: #6b7280;
 }
@@ -108,8 +139,23 @@
     white-space: nowrap;
 }
 
-.solicitud-equipo {
+.solicitud-detalle {
     color: #4b5563;
+}
+
+.detalle-sala {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detalle-sala strong {
+    color: #0f172a;
+}
+
+.detalle-sala small {
+    color: #94a3af;
+    font-weight: 600;
 }
 
 .motivo-rechazo {

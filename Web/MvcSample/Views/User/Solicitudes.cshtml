@@ -1,5 +1,5 @@
 @{
-    ViewData["Title"] = "Mis Solicitudes de Equipo";
+    ViewData["Title"] = "Mis Solicitudes de Sala y Equipo";
     ViewBag.HideFooter = true;
 }
 
@@ -39,6 +39,10 @@
             </div>
         </div>
     </header>
+
+    <form id="antiForgeryForm" style="display:none;">
+        @Html.AntiForgeryToken()
+    </form>
 
     <!-- TABS -->
     <div class="user-tabs">
@@ -134,11 +138,12 @@
                     <table class="solicitudes-table">
                         <thead>
                             <tr>
+                                <th>Tipo</th>
                                 <th>Sala</th>
-                                <th>Tiempo Estimado</th>
+                                <th>Horario / Duración</th>
                                 <th>Fecha Solicitud</th>
                                 <th>Estado</th>
-                                <th>Equipo Asignado</th>
+                                <th>Detalle</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -168,10 +173,29 @@
                                     Domain.Enums.EstadoSolicitud.Rechazada => "✗",
                                     _ => ""
                                 };
+                                var esSalaCompleta = solicitud.Tipo == Domain.Enums.TipoSolicitudPrestamo.SalaCompleta;
+                                var tipoClass = esSalaCompleta ? "tipo-sala" : "tipo-equipo";
+                                var tipoTexto = esSalaCompleta ? "Préstamo de sala" : "Equipo";
 
                                 <tr data-solicitud-id="@solicitud.Id" data-estado="@((int)solicitud.Estado)">
+                                    <td>
+                                        <span class="tipo-badge @tipoClass">@tipoTexto</span>
+                                    </td>
                                     <td class="solicitud-sala">@solicitud.SalaNumero</td>
-                                    <td class="solicitud-tiempo">@solicitud.TiempoEstimado @(solicitud.TiempoEstimado != 1 ? "horas" : "hora")</td>
+                                    <td class="solicitud-tiempo">
+                                        @if (esSalaCompleta && solicitud.FechaInicioUso.HasValue && solicitud.FechaFinUso.HasValue)
+                                        {
+                                            <div class="horario-rango">
+                                                <span>@solicitud.FechaInicioUso.Value.ToString("yyyy-MM-dd HH:mm")</span>
+                                                <span class="horario-arrow">→</span>
+                                                <span>@solicitud.FechaFinUso.Value.ToString("HH:mm")</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span>@solicitud.TiempoEstimado @(solicitud.TiempoEstimado != 1 ? "horas" : "hora")</span>
+                                        }
+                                    </td>
                                     <td class="solicitud-fecha">@solicitud.FechaSolicitud.ToString("yyyy-MM-dd HH:mm")</td>
                                     <td class="solicitud-estado">
                                         <span class="status-badge @estadoClass">
@@ -179,8 +203,22 @@
                                             <span>@estadoTexto</span>
                                         </span>
                                     </td>
-                                    <td class="solicitud-equipo">
-                                        @if (solicitud.Estado == Domain.Enums.EstadoSolicitud.Aprobada && !string.IsNullOrEmpty(solicitud.EquipoCodigo))
+                                    <td class="solicitud-detalle">
+                                        @if (esSalaCompleta)
+                                        {
+                                            <div class="detalle-sala">
+                                                @if (!string.IsNullOrEmpty(solicitud.TituloUso))
+                                                {
+                                                    <strong>@solicitud.TituloUso</strong>
+                                                }
+                                                <span>@(solicitud.JustificacionUso ?? "Uso general de sala")</span>
+                                                @if (solicitud.NumeroAsistentes.HasValue)
+                                                {
+                                                    <small>@solicitud.NumeroAsistentes personas</small>
+                                                }
+                                            </div>
+                                        }
+                                        else if (solicitud.Estado == Domain.Enums.EstadoSolicitud.Aprobada && !string.IsNullOrEmpty(solicitud.EquipoCodigo))
                                         {
                                             <span>EQ-@solicitud.EquipoCodigo</span>
                                         }

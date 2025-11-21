@@ -107,7 +107,7 @@
                     <tr>
                         <th>Usuario</th>
                         <th>Sala</th>
-                        <th>Tiempo Estimado</th>
+                        <th>Uso / Duración</th>
                         <th>Fecha Solicitud</th>
                         <th>Estado</th>
                         <th>Acciones</th>
@@ -141,8 +141,30 @@
                                         <span class="solicitud-user-email">@solicitud.UsuarioEmail</span>
                                     </div>
                                 </td>
-                                <td>@solicitud.SalaNumero</td>
-                                <td>@solicitud.TiempoEstimado horas</td>
+                                <td>
+                                    <div class="solicitud-sala">@solicitud.SalaNumero</div>
+                                    <span class="tipo-chip @(solicitud.Tipo == Domain.Enums.TipoSolicitudPrestamo.SalaCompleta ? "chip-sala" : "chip-equipo")">
+                                        @(solicitud.Tipo == Domain.Enums.TipoSolicitudPrestamo.SalaCompleta ? "Sala completa" : "Equipo")
+                                    </span>
+                                </td>
+                                <td class="uso-programado">
+                                    @if (solicitud.Tipo == Domain.Enums.TipoSolicitudPrestamo.SalaCompleta && solicitud.FechaInicioUso.HasValue && solicitud.FechaFinUso.HasValue)
+                                    {
+                                        <div class="uso-rango">
+                                            <span>@solicitud.FechaInicioUso.Value.ToString("yyyy-MM-dd HH:mm")</span>
+                                            <span>→</span>
+                                            <span>@solicitud.FechaFinUso.Value.ToString("HH:mm")</span>
+                                        </div>
+                                        if (!string.IsNullOrEmpty(solicitud.JustificacionUso))
+                                        {
+                                            <div class="uso-justificacion">@solicitud.JustificacionUso</div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span>@solicitud.TiempoEstimado horas</span>
+                                    }
+                                </td>
                                 <td>
                                     <div class="solicitud-fecha-info">
                                         <span>@solicitud.FechaSolicitud.ToString("yyyy-MM-dd HH:mm")</span>
