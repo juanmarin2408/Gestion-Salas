@@ -113,6 +113,3 @@ Gestion-Salas/
 - **Configuraciones sensibles:** no dejes credenciales en `appsettings.json`; migra a `appsettings.Development.json` o Secret Manager.
 
 ---
-
-Si necesitas ampliar la documentación (por ejemplo, diagramas de flujo de solicitudes, endpoints detallados o guías de despliegue), crea nuevos apartados dentro del README o en la carpeta `Docs/` (puede añadirse) para mantener la información centralizada.
-
